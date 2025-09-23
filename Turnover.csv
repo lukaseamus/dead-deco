@@ -27,6 +27,7 @@ John 1971,10.1007/bf00348025,"Ria de Aldan, Spain",Laminaria ochroleuca,Forest,1
 "Mann 1972, 1973","10.1007/bf00348280, 10.1126/science.182.4116.975","Fox Point, St Margaret's Bay, Nova Scotia, Canada",Laminaria digitata,Lamina,12.48,Table 2,
 "Mann 1972, 1973","10.1007/bf00348280, 10.1126/science.182.4116.975","Fox Point, St Margaret's Bay, Nova Scotia, Canada",Laminaria digitata,Lamina,9.6,Table 2,
 "Mann 1972, 1973","10.1007/bf00348280, 10.1126/science.182.4116.975","Fox Point, St Margaret's Bay, Nova Scotia, Canada",Agarum clathratum,Lamina,3.18,Table 2,
+Drew 1974,10.1016/0022-0981(74)90059-8,"Strait of Messina, Sicily, Italy",Laminaria ochroleuca,Thallus,0.672268908,Table 8,calculated as 80 g organic dry mass m^−2 y^−1 (P) / 119 g organic dry mass m^−2 (B)
 Jupp & Drew 1974,10.1016/0022-0981(74)90044-6,"Arisaig, Invernesshire, Scotland",Laminaria hyperborea,Forest,0.627058824,"Table 1, 6",calculated as 2.132 kg dry mass m^−2 y^−1 (P) / 3.4 kg dry mass m^−2 (B)
 Jupp & Drew 1974,10.1016/0022-0981(74)90044-6,"Arisaig, Invernesshire, Scotland",Laminaria hyperborea,Forest,0.790833333,"Table 1, 6",calculated as 0.949 kg dry mass m^−2 y^−1 (P) / 1.2 kg dry mass m^−2 (B)
 Gerard 1976,escholarship.org/uc/item/028959vr,"Point Cabrillo, Pacific Grove, Monterey Bay, California, USA",Macrocystis pyrifera,Forest,6.571428571,Text,calculated as 23 kg m^−2 y^−1 (P) / 3.5 kg m^−2 (B)
@@ -59,7 +60,7 @@ Newell et al. 1980,10.3354/meps002045,"Western Cape Peninsula, South Africa",Eck
 Newell et al. 1980,10.3354/meps002045,"Western Cape Peninsula, South Africa",Ecklonia maxima,Forest,3.8,Table 10,
 Chapman & Lindley 1981,10.1515/9783110865271-025,"Turton Bay, Igloolik Island, Nunavut, Canada",Laminaria solidungula,Thallus,0.72,Text,
 Chapman & Lindley 1981,10.1515/9783110865271-025,"Turton Bay, Igloolik Island, Nunavut, Canada",Laminaria solidungula,Forest,0.658045433,"Table 1, Text",calculated as 19.6 g C m^−2 y^−1 (P) / ( 867.26 g fresh mass m^−2 * 0.108 g dry mass g^−1 fresh mass * 0.318 g C g^−1 dry mass ) (B)
-Feranández & Niell 1981,NA,"Asturias, Spain",Saccorhiza polyschides,Forest,11.59241042,Table 5,"taking the mean of P/B monthly means yielded 31.48, or annual P/B of 378, so instead P/B was calculated as mean of production monthly means * 12 / mean of initial biomass monthly means"
+Feranández & Niell 1981,revistes.ub.edu/index.php/oecologiaaquatica/article/view/26920,"Asturias, Spain",Saccorhiza polyschides,Forest,11.59241042,Table 5,"taking the mean of P/B monthly means yielded 31.48, or annual P/B of 378, so instead P/B was calculated as mean of production monthly means * 12 / mean of initial biomass monthly means"
 Dunton et al. 1982,10.14430/arctic2355,"Stefansson Sound, Beaufort Sea, Alaska, USA",Laminaria solidungula,Lamina,0.95,Text,
 Brady-Campbell et al. 1984,10.3354/meps018079,"Coaster's Harbour Island, Narragansett Bay, Rhode Island, USA",Saccharina latissima,Forest,5.2,Table 1,
 Brady-Campbell et al. 1984,10.3354/meps018079,"Fort Wetherill, Narragansett Bay, Rhode Island, USA",Saccharina latissima,Forest,4.5,Table 1,
@@ -93,18 +94,18 @@ Flores-Moya et al. 1993,10.1080/09670269300650331,"Tarifa, Spain",Phyllariopsis 
 van Tussenbroek 1993,10.1080/09670269300650251,"Stanley Harbour, Falkland Islands",Macrocystis pyrifera,Lamina,6.372540984,Table 1,"annual production calculated as mean of May and December, so assumes these to be annual minimum and maximum"
 Fairhead 2001,hdl.handle.net/2440/21777,"Abalone Cove, West Island, South Australia, Australia",Ecklonia radiata,Forest,2.635532382,Table 6.1,calculated as 0.46 g dry mass plant^−1 d^−1 * 365 * 14.3 plants m^−2 (P) / 911 g dry mass m^−2 (B)
 Fairhead 2001,hdl.handle.net/2440/21777,"Abalone Cove, West Island, South Australia, Australia",Ecklonia radiata,Forest,1.596448598,Table 6.1,calculated as 0.6 g dry mass plant^−1 d^−1 * 365 * 3.9 plants m^−2 (P) / 535 g dry mass m^−2 (B)
-Borum et al. 2002,10.1007/s00227-002-0806-9,"Young Sound, King Christian X Land, Greenland",Saccharina latissima,Thallus,,Figure 6a,
-Borum et al. 2002,10.1007/s00227-002-0806-9,"Young Sound, King Christian X Land, Greenland",Saccharina latissima,Thallus,,Figure 6a,
-Borum et al. 2002,10.1007/s00227-002-0806-9,"Young Sound, King Christian X Land, Greenland",Saccharina latissima,Thallus,,Figure 6a,
-Borum et al. 2002,10.1007/s00227-002-0806-9,"Young Sound, King Christian X Land, Greenland",Saccharina latissima,Thallus,,Figure 6a,
+Borum et al. 2002,10.1007/s00227-002-0806-9,"Young Sound, King Christian X Land, Greenland",Saccharina latissima,Thallus,0.634920635,Figure 6a,new lamina method
+Borum et al. 2002,10.1007/s00227-002-0806-9,"Young Sound, King Christian X Land, Greenland",Saccharina latissima,Thallus,0.567800454,Figure 6a,new lamina method
+Borum et al. 2002,10.1007/s00227-002-0806-9,"Young Sound, King Christian X Land, Greenland",Saccharina latissima,Thallus,0.595011338,Figure 6a,new lamina method
+Borum et al. 2002,10.1007/s00227-002-0806-9,"Young Sound, King Christian X Land, Greenland",Saccharina latissima,Thallus,0.580498866,Figure 6a,new lamina method
 Fairhead et al. 2004,10.1007/s00227-004-1308-8,"Abalone Cove, West Island, South Australia, Australia",Ecklonia radiata,Thallus,3.507365608,Table 4,"calculated as daily elongation * mass-length ratio / thallus mass, averaged across seasons * 365"
 Fairhead et al. 2004,10.1007/s00227-004-1308-8,"Abalone Cove, West Island, South Australia, Australia",Ecklonia radiata,Thallus,1.984464841,Table 4,"calculated as daily elongation * mass-length ratio / thallus mass, averaged across seasons * 365"
 Fairhead et al. 2004,10.1007/s00227-004-1308-8,"Abalone Cove, West Island, South Australia, Australia",Ecklonia radiata,Thallus,4.234331347,Table 4,"calculated as daily elongation * mass-length ratio / thallus mass, averaged across seasons * 365, 5 and 12 m sites were combined to get a complete set of seasons"
 Vadas et al. 2004,10.1656/1092-6194(2004)11[143:GAPOSF]2.0.CO;2,"Bar Island, Cobscook Bay, Maine, USA",Saccharina latissima,Forest,2.93,Table 3,
 Vadas et al. 2004,10.1656/1092-6194(2004)11[143:GAPOSF]2.0.CO;2,"Mahar Point, Cobscook Bay, Maine, USA",Saccharina latissima,Forest,4.17,Table 3,
 Vadas et al. 2004,10.1656/1092-6194(2004)11[143:GAPOSF]2.0.CO;2,"Garnet Point, Cobscook Bay, Maine, USA",Saccharina latissima,Forest,3.2,Table 3,
-Tala & Edding 2005,10.1016/j.aquabot.2005.02.009,"Tinajas Point, Pampilla Peninsula, Coquimbo, Chile",Lessonia nigrescens,Lamina,,"Figure 3, 6",
-Tala & Edding 2005,10.1016/j.aquabot.2005.02.009,"Tongoy Peninsula, Chile",Lessonia trabeculata,Lamina,,"Figure 3, 6",
+Tala & Edding 2005,10.1016/j.aquabot.2005.02.009,"Tinajas Point, Pampilla Peninsula, Coquimbo, Chile",Lessonia nigrescens,Lamina,4.10067607,"Figure 3, 6",calculated as annual mean daily production * 365 / annual mean biomass
+Tala & Edding 2005,10.1016/j.aquabot.2005.02.009,"Tongoy Peninsula, Chile",Lessonia trabeculata,Lamina,2.712803688,"Figure 3, 6",calculated as annual mean daily production * 365 / annual mean biomass
 Tala & Edding 2007,10.1111/j.1440-1835.2006.00447.x,"Tinajas Point, Pampilla Peninsula, Coquimbo, Chile",Lessonia nigrescens,Forest,5.378298701,"Table 2, 3","annual production and annual mean biomass calculated as mean of spring and autumn, so assumes these to be annual maximum and minimum"
 Tala & Edding 2007,10.1111/j.1440-1835.2006.00447.x,"Tongoy Peninsula, Chile",Lessonia trabeculata,Forest,0.963557599,"Table 2, 3","annual production and annual mean biomass calculated as mean of spring and autumn, so assumes these to be annual maximum and minimum"
 Quartino & Boraso de Zaixso 2008,10.1007/s00300-007-0356-1,"Potter Cove, Maxwell Bay, King George Island, South Shetland Islands, Antarctica",Himantothallus grandifolius,Forest,1.41,Table 4,"calculated as sum of monthly P/B, assuming there is no production in May to November"
@@ -116,16 +117,16 @@ Ortiz 2010,10.1002/aqc.1126,"Santa Maria Island, Mejillones Peninsula, Chile",Ma
 Ortiz 2010,10.1002/aqc.1126,"Santa Maria Island, Mejillones Peninsula, Chile",Lessonia trabeculata,Lamina,3.4,Table 1,
 Nielsen et al. 2014,10.1007/s00227-014-2482-y,"Aarhus Bay, Denmark",Saccharina latissima,Lamina,1.1,Text,
 Rassweiler et al. 2018,10.1002/ecy.2440,"Santa Barbara, California",Macrocystis pyrifera,Forest,12,Text,
-Pessarrodona et al. 2019,10.1111/1365-2745.13053,"Plymouth Sound, Devon, United Kingdom",Laminaria hyperborea,Lamina,,"Text, Figure S1, S2",
-Pessarrodona et al. 2019,10.1111/1365-2745.13053,"Plymouth Sound, Devon, United Kingdom",Laminaria ochroleuca,Lamina,,"Text, Figure S1, S2",
+Pessarrodona et al. 2019,10.1111/1365-2745.13053,"Plymouth Sound, Devon, United Kingdom",Laminaria hyperborea,Thallus,0.730966704,"Text, Figure S1, S2",calculated as annual mean dry mass production per plant across sites / ( annual mean fresh mass per plant * annual mean dry-fresh mass ratio )
+Pessarrodona et al. 2019,10.1111/1365-2745.13053,"Plymouth Sound, Devon, United Kingdom",Laminaria ochroleuca,Thallus,2.13375836,"Text, Figure S1, S2",calculated as annual mean dry mass production per plant across sites / ( annual mean fresh mass per plant * annual mean dry-fresh mass ratio )
 Pedersen et al. 2020,10.1007/s00442-019-04573-z,"Senja, Hekkinga, Edøya and Hillesøya, Malangen, Troms, Norway",Laminaria hyperborea,Forest,0.648571429,Text,calculated as 499.4 g C m^−2 y^−1 (P) / 770 g C m^−2 (B)
-Blain et al. 2021,10.1111/gcb.15837,"Motutapu Island, Hauraki Gulf, New Zealand",Ecklonia radiata,Forest,,Figure 4c,
-Blain et al. 2021,10.1111/gcb.15837,"Noises Islands, Hauraki Gulf, New Zealand",Ecklonia radiata,Forest,,Figure 4c,
-Blain et al. 2021,10.1111/gcb.15837,"Motuora Island, Hauraki Gulf, New Zealand",Ecklonia radiata,Forest,,Figure 4c,
-Blain et al. 2021,10.1111/gcb.15837,"Tiritiri Matangi Island, Hauraki Gulf, New Zealand",Ecklonia radiata,Forest,,Figure 4c,
-Blain et al. 2021,10.1111/gcb.15837,"Leigh, Hauraki Gulf, New Zealand",Ecklonia radiata,Forest,,Figure 4c,
-Blain et al. 2021,10.1111/gcb.15837,"Katherine Bay, Great Barrier Island, Hauraki Gulf, New Zealand",Ecklonia radiata,Forest,,Figure 4c,
-Blain et al. 2021,10.1111/gcb.15837,"Southwest Bay, Mokohinau Islands, Hauraki Gulf, New Zealand",Ecklonia radiata,Forest,,Figure 4c,
+Blain et al. 2021,10.1111/gcb.15837,"Motutapu Island, Hauraki Gulf, New Zealand",Ecklonia radiata,Forest,2.116131191,Figure 4c,
+Blain et al. 2021,10.1111/gcb.15837,"Noises Islands, Hauraki Gulf, New Zealand",Ecklonia radiata,Forest,2.966532798,Figure 4c,
+Blain et al. 2021,10.1111/gcb.15837,"Motuora Island, Hauraki Gulf, New Zealand",Ecklonia radiata,Forest,2.739290495,Figure 4c,
+Blain et al. 2021,10.1111/gcb.15837,"Tiritiri Matangi Island, Hauraki Gulf, New Zealand",Ecklonia radiata,Forest,2.769745649,Figure 4c,
+Blain et al. 2021,10.1111/gcb.15837,"Leigh, Hauraki Gulf, New Zealand",Ecklonia radiata,Forest,3.107095047,Figure 4c,
+Blain et al. 2021,10.1111/gcb.15837,"Katherine Bay, Great Barrier Island, Hauraki Gulf, New Zealand",Ecklonia radiata,Forest,4.041834003,Figure 4c,
+Blain et al. 2021,10.1111/gcb.15837,"Southwest Bay, Mokohinau Islands, Hauraki Gulf, New Zealand",Ecklonia radiata,Forest,4.714190094,Figure 4c,
 Bell & Kroeker 2022,10.1111/jpy.13291,"Harris Island, Sitka Sound, Alaska, USA",Macrocystis pyrifera,Thallus,1.818558824,"Figure 1b, Data","calculated as mean relative growth rate (d^−1) * 365 d y^−1, size and mass are linearly related, so size- and mass-specific growth rates are equivalent here"
 Bell & Kroeker 2022,10.1111/jpy.13291,"Breast Island, Sitka Sound, Alaska, USA",Macrocystis pyrifera,Thallus,1.926388889,"Figure 1b, Data","calculated as mean relative growth rate (d^−1) * 365 d y^−1, size and mass are linearly related, so size- and mass-specific growth rates are equivalent here"
 Bell & Kroeker 2022,10.1111/jpy.13291,"Samsing Pinnacle, Sitka Sound, Alaska, USA",Macrocystis pyrifera,Thallus,2.1854375,"Figure 1b, Data","calculated as mean relative growth rate (d^−1) * 365 d y^−1, size and mass are linearly related, so size- and mass-specific growth rates are equivalent here"
