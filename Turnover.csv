@@ -2,6 +2,8 @@
 John 1968 in Jupp & Drew 1974 ,10.1016/0022-0981(74)90044-6,"Pettico Wick, St Abbs, Scotland, United Kingdom",Laminaria hyperborea,Forest,0.7,Table 7,calculated as 2.1 kg organic dry mass m^−2 y^−1 (P) / 3 kg organic dry mass m^−2 (B)
 John 1968 in Jupp & Drew 1974 ,10.1016/0022-0981(74)90044-6,"Pettico Wick, St Abbs, Scotland, United Kingdom",Laminaria hyperborea,Forest,0.707692308,Table 7,calculated as 0.92 kg organic dry mass m^−2 y^−1 (P) / 1.3 kg organic dry mass m^−2 (B)
 Lüning 1969,10.1007/bf00360961,"Helgoland, Germany",Laminaria hyperborea,Forest,0.63963964,Text,calculated as 1.4 kg dry mass m^−2 y^−1 (P) / ( 11.1 kg fresh mass m^−2 * 1.4 kg dry mass / 7.1 kg fresh mass ) (B)
+Fuji & Kawamura 1970,10.2331/suisan.36.763,"Nishise Shoal, Hokkaido, Japan",Saccharina angustata,Forest,4.074240708,"Table 8, 9",calculated as annual sum of areal production / annual mean of areal biomass summed across age groups
+Yoshida 1970 in Kamohara et al. 2009,10.2331/suisan.75.1027,"Matsushima Bay, Miyagi, Japan",Eisenia bicyclis,Forest,1.70212766,Table 4,"calculated as 20 kg wet mass m^−2 y^−1 (P) / annual mean biomass calculated as mean of summer and winter, so assumes these to be annual maximum and minimum"
 John 1971,10.1007/bf00348025,"Ria de Aldan, Spain",Laminaria ochroleuca,Forest,0.745869565,Table 3,calculated as P / B
 John 1971,10.1007/bf00348025,"Ria de Aldan, Spain",Saccorhiza polyschides,Forest,1.001808511,Table 3,calculated as P / B
 John 1971,10.1007/bf00348025,"Ria de Aldan, Spain",Laminaria ochroleuca,Forest,0.790833333,Table 3,calculated as P / B
@@ -32,6 +34,7 @@ Jupp & Drew 1974,10.1016/0022-0981(74)90044-6,"Arisaig, Invernesshire, Scotland"
 Jupp & Drew 1974,10.1016/0022-0981(74)90044-6,"Arisaig, Invernesshire, Scotland",Laminaria hyperborea,Forest,0.790833333,"Table 1, 6",calculated as 0.949 kg dry mass m^−2 y^−1 (P) / 1.2 kg dry mass m^−2 (B)
 Gerard 1976,escholarship.org/uc/item/028959vr,"Point Cabrillo, Pacific Grove, Monterey Bay, California, USA",Macrocystis pyrifera,Forest,6.571428571,Text,calculated as 23 kg m^−2 y^−1 (P) / 3.5 kg m^−2 (B)
 Field et al. 1977,hdl.handle.net/10520/AJA00382353_3875,"Oudekraal, Cape Town, South Africa",Laminaria pallida,Forest,3.099862101,Text,calculated as 53950 kJ m^−2 y^−1 (P) / 17404 kJ m^−2 (B)
+Johnston et al. 1977,10.1007/bf02207859,"Loch Creran, Oban, Scotland",Saccharina latissima,Lamina,3.247016671,"Table 2, Figure 7, Text",calculated as 67.714 g C frond^−1 y^−1 (P) / ( annual mean of sums across frond sections (63.97 dry mass frond^−1) * 0.326 g C g^−1 dry mass )
 Kain 1977,10.1017/S0025315400025054,"Isle of Man and Scotland, United Kingdom",Laminaria hyperborea,Forest,1.523178808,Text,"calculated as dry P to fresh B ratio (0.23, slope of regression in Figure 4) / mean dry-fresh mass ratio for the whole thallus (0.151)"
 Dieckmann 1978,hdl.handle.net/11427/17787,"Oudekraal, Cape Town, South Africa",Laminaria pallida,Lamina,4.12,Table 4.4,
 Dieckmann 1978,hdl.handle.net/11427/17787,"Oudekraal, Cape Town, South Africa",Laminaria pallida,Lamina,4.15,Table 4.4,
@@ -67,7 +70,11 @@ Brady-Campbell et al. 1984,10.3354/meps018079,"Fort Wetherill, Narragansett Bay,
 Brady-Campbell et al. 1984,10.3354/meps018079,"Land's End, Rhode Island Sound, Rhode Island, USA",Saccharina latissima,Forest,3.6,Table 1,
 Dunton 1984,10.1016/b978-0-12-079030-2.50021-6,"Stefansson Sound, Beaufort Sea, Alaska, USA",Laminaria solidungula,Lamina,1.44,"Table 1, Text",clean ice cover
 Dunton 1984,10.1016/b978-0-12-079030-2.50021-6,"Stefansson Sound, Beaufort Sea, Alaska, USA",Laminaria solidungula,Lamina,0.91,Table 1,turbid ice cover
+Foreman 1984,10.1007/bf00027696,"Malcolm Island, British Columbia, Canada",Nereocystis lutkeana,Forest,2.076817486,Figure 1,"calculated as annual maximum biomass / annual mean biomass, based on Foreman's assumption that all biomass was produced that year since this is an annual species"
 Kirkman 1984,10.1016/0022-0981(84)90060-1,"Marmion Reef, Perth, Western Australia, Australia",Ecklonia radiata,Forest,1.725,Text,calculated as 20.7 kg m^−2 y^−1 (P) / ( (6 + 18) / 2 ) kg m^−2 (B)
+Novaczek 1984,10.1007/bf00393117,"Goat Island Bay, New Zealand",Ecklonia radiata,Lamina,1.217920835,"Table 2, 4, Text",calculated as mean frond dry mass production within size class 4 / ( annual mean frond fresh mass for size class 4 * mean of autumn maximum and spring minimum dry-fresh mass ratios for fronds of size class 4 )
+Novaczek 1984,10.1007/bf00393117,"Goat Island Bay, New Zealand",Ecklonia radiata,Lamina,1.398601399,"Table 2, 4, Text",calculated as mean frond dry mass production within size class 4 / ( annual mean frond fresh mass for size class 4 * mean of autumn maximum and spring minimum dry-fresh mass ratios for fronds of size class 4 )
+Haxen & Grindley 1985,10.1007/978-3-642-82275-9_87,"Marion Island, Prince Edward Islands, South Africa",Durvillaea antarctica,Forest,1.369064237,"Table 1, Text",calculated as 90.1 kg fresh mass m^−2 y^−1 * 1.1575 (P) / mean kg fresh mass m^−2 across sites (B)
 Dunton & Schell 1986,10.3354/meps031057,"Stefansson Sound, Beaufort Sea, Alaska, USA",Laminaria solidungula,Thallus,1.3,Table 4,
 Dunton & Schell 1986,10.3354/meps031057,"Stefansson Sound, Beaufort Sea, Alaska, USA",Laminaria solidungula,Thallus,0.8,Table 4,
 Larkum 1986,10.1016/0022-0981(86)90241-8,"Fairlight Bay, Port Jackson, Sydney, New South Wales, Australia",Ecklonia radiata,Forest,1.52658733,"Table 1, Text",calculated as 3.1 kg dry mass m^−2 y^−1 (P) / annual mean kg dry mass plant^−1 * 22.5 plants m^−2 (B)
@@ -92,20 +99,21 @@ Egan & Yarish 1990,10.3354/meps067263,"Black Ledge, Long Island Sound, USA",Sacc
 Attwood et al. 1991,10.1007/bf00234275,"Prince Edward Islands, South Africa",Macrocystis laevis,Forest,5.229850746,"Table 2, Text","annual production calculated as mean of April and August, so assumes these to be annual minimum and maximum"
 Flores-Moya et al. 1993,10.1080/09670269300650331,"Tarifa, Spain",Phyllariopsis purpurascens,Lamina,8.7,Table 2,"calculated as sum of monthly P/B, assuming there is no production in October to March"
 van Tussenbroek 1993,10.1080/09670269300650251,"Stanley Harbour, Falkland Islands",Macrocystis pyrifera,Lamina,6.372540984,Table 1,"annual production calculated as mean of May and December, so assumes these to be annual minimum and maximum"
-Fairhead 2001,hdl.handle.net/2440/21777,"Abalone Cove, West Island, South Australia, Australia",Ecklonia radiata,Forest,2.635532382,Table 6.1,calculated as 0.46 g dry mass plant^−1 d^−1 * 365 * 14.3 plants m^−2 (P) / 911 g dry mass m^−2 (B)
-Fairhead 2001,hdl.handle.net/2440/21777,"Abalone Cove, West Island, South Australia, Australia",Ecklonia radiata,Forest,1.596448598,Table 6.1,calculated as 0.6 g dry mass plant^−1 d^−1 * 365 * 3.9 plants m^−2 (P) / 535 g dry mass m^−2 (B)
+Fairhead 2001,hdl.handle.net/2440/21777,"Abalone Cove, West Island, South Australia, Australia",Ecklonia radiata,Forest,2.635532382,Table 6.1,calculated as 0.46 g dry mass plant^−1 d^−1 * 365 d y^−1 * 14.3 plants m^−2 (P) / 911 g dry mass m^−2 (B)
+Fairhead 2001,hdl.handle.net/2440/21777,"Abalone Cove, West Island, South Australia, Australia",Ecklonia radiata,Forest,1.596448598,Table 6.1,calculated as 0.6 g dry mass plant^−1 d^−1 * 365 d y^−1 * 3.9 plants m^−2 (P) / 535 g dry mass m^−2 (B)
 Borum et al. 2002,10.1007/s00227-002-0806-9,"Young Sound, King Christian X Land, Greenland",Saccharina latissima,Thallus,0.634920635,Figure 6a,new lamina method
 Borum et al. 2002,10.1007/s00227-002-0806-9,"Young Sound, King Christian X Land, Greenland",Saccharina latissima,Thallus,0.567800454,Figure 6a,new lamina method
 Borum et al. 2002,10.1007/s00227-002-0806-9,"Young Sound, King Christian X Land, Greenland",Saccharina latissima,Thallus,0.595011338,Figure 6a,new lamina method
 Borum et al. 2002,10.1007/s00227-002-0806-9,"Young Sound, King Christian X Land, Greenland",Saccharina latissima,Thallus,0.580498866,Figure 6a,new lamina method
-Fairhead et al. 2004,10.1007/s00227-004-1308-8,"Abalone Cove, West Island, South Australia, Australia",Ecklonia radiata,Thallus,3.507365608,Table 4,"calculated as daily elongation * mass-length ratio / thallus mass, averaged across seasons * 365"
-Fairhead et al. 2004,10.1007/s00227-004-1308-8,"Abalone Cove, West Island, South Australia, Australia",Ecklonia radiata,Thallus,1.984464841,Table 4,"calculated as daily elongation * mass-length ratio / thallus mass, averaged across seasons * 365"
-Fairhead et al. 2004,10.1007/s00227-004-1308-8,"Abalone Cove, West Island, South Australia, Australia",Ecklonia radiata,Thallus,4.234331347,Table 4,"calculated as daily elongation * mass-length ratio / thallus mass, averaged across seasons * 365, 5 and 12 m sites were combined to get a complete set of seasons"
+Fairhead et al. 2004,10.1007/s00227-004-1308-8,"Abalone Cove, West Island, South Australia, Australia",Ecklonia radiata,Thallus,3.507365608,Table 4,"calculated as daily elongation * mass-length ratio / thallus mass, averaged across seasons * 365 d y^−1"
+Fairhead et al. 2004,10.1007/s00227-004-1308-8,"Abalone Cove, West Island, South Australia, Australia",Ecklonia radiata,Thallus,1.984464841,Table 4,"calculated as daily elongation * mass-length ratio / thallus mass, averaged across seasons * 365 d y^−1"
+Fairhead et al. 2004,10.1007/s00227-004-1308-8,"Abalone Cove, West Island, South Australia, Australia",Ecklonia radiata,Thallus,4.234331347,Table 4,"calculated as daily elongation * mass-length ratio / thallus mass, averaged across seasons * 365 d y^−1, 5 and 12 m sites were combined to get a complete set of seasons"
+Tominga et al. 2004,sourui.org/publications/sorui/list/52_01.html,"Tei, Tosa Bay, Kochi, Japan",Ecklonia cava,Forest,1.872987497,"Figure 5, Text",calculated as 2727.48 g dry mass m^−2 y^−1 (P) / annual mean g dry mass m^−2 (B)
 Vadas et al. 2004,10.1656/1092-6194(2004)11[143:GAPOSF]2.0.CO;2,"Bar Island, Cobscook Bay, Maine, USA",Saccharina latissima,Forest,2.93,Table 3,
 Vadas et al. 2004,10.1656/1092-6194(2004)11[143:GAPOSF]2.0.CO;2,"Mahar Point, Cobscook Bay, Maine, USA",Saccharina latissima,Forest,4.17,Table 3,
 Vadas et al. 2004,10.1656/1092-6194(2004)11[143:GAPOSF]2.0.CO;2,"Garnet Point, Cobscook Bay, Maine, USA",Saccharina latissima,Forest,3.2,Table 3,
-Tala & Edding 2005,10.1016/j.aquabot.2005.02.009,"Tinajas Point, Pampilla Peninsula, Coquimbo, Chile",Lessonia nigrescens,Lamina,4.10067607,"Figure 3, 6",calculated as annual mean daily production * 365 / annual mean biomass
-Tala & Edding 2005,10.1016/j.aquabot.2005.02.009,"Tongoy Peninsula, Chile",Lessonia trabeculata,Lamina,2.712803688,"Figure 3, 6",calculated as annual mean daily production * 365 / annual mean biomass
+Tala & Edding 2005,10.1016/j.aquabot.2005.02.009,"Tinajas Point, Pampilla Peninsula, Coquimbo, Chile",Lessonia nigrescens,Lamina,4.10067607,"Figure 3, 6",calculated as annual mean daily production * 365 d y^−1 / annual mean biomass
+Tala & Edding 2005,10.1016/j.aquabot.2005.02.009,"Tongoy Peninsula, Chile",Lessonia trabeculata,Lamina,2.712803688,"Figure 3, 6",calculated as annual mean daily production * 365 d y^−1 / annual mean biomass
 Tala & Edding 2007,10.1111/j.1440-1835.2006.00447.x,"Tinajas Point, Pampilla Peninsula, Coquimbo, Chile",Lessonia nigrescens,Forest,5.378298701,"Table 2, 3","annual production and annual mean biomass calculated as mean of spring and autumn, so assumes these to be annual maximum and minimum"
 Tala & Edding 2007,10.1111/j.1440-1835.2006.00447.x,"Tongoy Peninsula, Chile",Lessonia trabeculata,Forest,0.963557599,"Table 2, 3","annual production and annual mean biomass calculated as mean of spring and autumn, so assumes these to be annual maximum and minimum"
 Quartino & Boraso de Zaixso 2008,10.1007/s00300-007-0356-1,"Potter Cove, Maxwell Bay, King George Island, South Shetland Islands, Antarctica",Himantothallus grandifolius,Forest,1.41,Table 4,"calculated as sum of monthly P/B, assuming there is no production in May to November"
@@ -113,8 +121,15 @@ Quartino & Boraso de Zaixso 2008,10.1007/s00300-007-0356-1,"Potter Cove, Maxwell
 Reed et al. 2008,10.1890/07-1106.1,"Arroyo Burro, Santa Barbara, California, USA",Macrocystis pyrifera,Forest,7.3,Text,
 Reed et al. 2008,10.1890/07-1106.1,"Arroyo Quemado, Santa Barbara, California, USA",Macrocystis pyrifera,Forest,5.9,Text,
 Reed et al. 2008,10.1890/07-1106.1,"Mohawk Reef, Santa Barbara, California, USA",Macrocystis pyrifera,Forest,7.2,Text,
+Kamohara et al. 2009,10.2331/suisan.75.1027,"Utsumi, Ise Bay, Aichi, Japan",Eisenia arborea,Forest,3.683098592,Table 4,calculated as 5.23 kg dry mass m^−2 y^−1 (P) / 1.42 kg dry mass m^−2 (B)
 Ortiz 2010,10.1002/aqc.1126,"Santa Maria Island, Mejillones Peninsula, Chile",Macrocystis pyrifera,Lamina,10.3,Table 1,
 Ortiz 2010,10.1002/aqc.1126,"Santa Maria Island, Mejillones Peninsula, Chile",Lessonia trabeculata,Lamina,3.4,Table 1,
+Krumhansl & Scheibling 2011,10.3354/meps08905,,,,,"Table 4, 5",
+,,,,,,,
+,,,,,,,
+Pedersen et al. 2012,10.3354/meps09594,"Finnøya and Sandøya, Møre og Romsdal, Norway",Laminaria hyperborea,Thallus,0.677760098,"Figure 7d, 8d",calculated as P / mean B across sites within exposure level
+Pedersen et al. 2012,10.3354/meps09594,"Finnøya and Sandøya, Møre og Romsdal, Norway",Laminaria hyperborea,Thallus,0.717261722,"Figure 7d, 8d",calculated as P / mean B across sites within exposure level
+Pedersen et al. 2012,10.3354/meps09594,"Finnøya and Sandøya, Møre og Romsdal, Norway",Laminaria hyperborea,Thallus,0.682173913,"Figure 7d, 8d",calculated as P / mean B across sites within exposure level
 Nielsen et al. 2014,10.1007/s00227-014-2482-y,"Aarhus Bay, Denmark",Saccharina latissima,Lamina,1.1,Text,
 Rassweiler et al. 2018,10.1002/ecy.2440,"Santa Barbara, California",Macrocystis pyrifera,Forest,12,Text,
 Pessarrodona et al. 2019,10.1111/1365-2745.13053,"Plymouth Sound, Devon, United Kingdom",Laminaria hyperborea,Thallus,0.730966704,"Text, Figure S1, S2",calculated as annual mean dry mass production per plant across sites / ( annual mean fresh mass per plant * annual mean dry-fresh mass ratio )
@@ -136,3 +151,6 @@ Bell & Kroeker 2022,10.1111/jpy.13291,"Samsing Pinnacle, Sitka Sound, Alaska, US
 Bell & Kroeker 2022,10.1111/jpy.13291,"Harris Island, Sitka Sound, Alaska, USA",Neoagarum fimbriatum,Lamina,3.373642857,"Figure 3b, Data","calculated as mean relative growth rate (d^−1) * 365 d y^−1, size and mass are linearly related, so size- and mass-specific growth rates are equivalent here"
 Bell & Kroeker 2022,10.1111/jpy.13291,"Breast Island, Sitka Sound, Alaska, USA",Neoagarum fimbriatum,Lamina,2.847,"Figure 3b, Data","calculated as mean relative growth rate (d^−1) * 365 d y^−1, size and mass are linearly related, so size- and mass-specific growth rates are equivalent here"
 Bell & Kroeker 2022,10.1111/jpy.13291,"Samsing Pinnacle, Sitka Sound, Alaska, USA",Neoagarum fimbriatum,Lamina,2.414214286,"Figure 3b, Data","calculated as mean relative growth rate (d^−1) * 365 d y^−1, size and mass are linearly related, so size- and mass-specific growth rates are equivalent here"
+Nardelli et al. 2024,10.1111/jpy.13408,"Coal Point, Bruny Island, Tasmania",Lessonia corrugata,Forest,1.811697955,"Figure 4b, 6a, Table 3",calculated as annual mean g C blade^−1 d^−1 * 365 d y^−1 * annual mean blades m^−2 (P) / annual mean g C m^−2 (B)
+Nardelli et al. 2024,10.1111/jpy.13408,"South Arm, Derwent Estuary, Tasmania",Lessonia corrugata,Forest,1.844296262,"Figure 4b, 6a, Table 3",calculated as annual mean g C blade^−1 d^−1 * 365 d y^−1 * annual mean blades m^−2 (P) / annual mean g C m^−2 (B)
+Nardelli et al. 2024,10.1111/jpy.13408,"Taroona, Derwent Estuary, Tasmania",Lessonia corrugata,Forest,3.391660595,"Figure 4b, 6a, Table 3",calculated as annual mean g C blade^−1 d^−1 * 365 d y^−1 * annual mean blades m^−2 (P) / annual mean g C m^−2 (B)
