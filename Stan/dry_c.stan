@@ -1,0 +1,151 @@
+functions{
+  // Beta prime log probability density function
+  real betap_lpdf( real y , real alpha , real beta ) {
+    return ( alpha - 1 ) * log( y )
+    - ( alpha + beta ) * log1p( y ) -
+    lbeta( alpha , beta );
+  }
+}
+
+data{
+  int n;
+  vector[n] Days;
+  vector[n] Proportion_mean;
+  vector[n] Proportion_sd;
+  array[n] int Species;
+  int n_Species;
+  array[n] int Treatment;
+  int n_Treatment;
+}
+
+transformed data{
+  // Convert sd to nu because this is easier on the sampler
+  vector[n] Proportion_nu = 
+  Proportion_mean .* ( 1 + Proportion_mean ) ./ Proportion_sd^2;
+}
+
+parameters{
+  // Parameter describing true, unobserved proportion
+  vector<lower=0>[n] p;
+  
+  // Parameters describing mean
+  /// Global parameters
+  real alpha_mu;
+  real log_mu_mu;
+  real log_tau_mu;
+  
+  real<lower=0> alpha_sigma;
+  real<lower=0> log_mu_sigma;
+  real<lower=0> log_tau_sigma;
+  
+  /// Species/treatment parameters
+  matrix[n_Species, n_Treatment] alpha;
+  matrix[n_Species, n_Treatment] log_mu;
+  matrix[n_Species, n_Treatment] log_tau;
+  
+  // Parameters describing precision
+  /// Global parameters
+  real log_epsilon_mu;
+  real log_lambda_mu;
+  real log_theta_mu;
+
+  real<lower=0> log_epsilon_sigma;
+  real<lower=0> log_lambda_sigma;
+  real<lower=0> log_theta_sigma;
+  
+  /// Species/treatment parameters
+  matrix[n_Species, n_Treatment] log_epsilon;
+  matrix[n_Species, n_Treatment] log_lambda;
+  matrix[n_Species, n_Treatment] log_theta;
+}
+
+model{
+  // Priors
+  /// Likelihood mean
+  //// Global parameters
+  alpha_mu ~ normal( -0.02 , 0.01 );
+  log_mu_mu ~ normal( log(40) , 0.3 );
+  log_tau_mu ~ normal( log(0.06) , 0.4 );
+  
+  alpha_sigma ~ normal( 0 , 0.01 ) T[0,]; // half-normal prior
+  log_mu_sigma ~ normal( 0 , 0.3 ) T[0,];
+  log_tau_sigma ~ normal( 0 , 0.4 ) T[0,];
+  
+  //// Species/treatment parameters
+  to_vector(alpha) ~ normal( alpha_mu , alpha_sigma );
+  to_vector(log_mu) ~ normal( log_mu_mu , log_mu_sigma );
+  to_vector(log_tau) ~ normal( log_tau_mu , log_tau_sigma );
+
+  /// Likelihood precision
+  //// Global parameters
+  log_epsilon_mu ~ normal( log(4e4) , 0.3 );
+  log_lambda_mu ~ normal( log(0.3) , 0.3 );
+  log_theta_mu ~ normal( log(500) , 0.3 );
+  
+  log_epsilon_sigma ~ normal( 0 , 0.3 ) T[0,];
+  log_lambda_sigma ~ normal( 0 , 0.3 ) T[0,];
+  log_theta_sigma ~ normal( 0 , 0.3 ) T[0,];
+  
+  //// Species/treatment parameters
+  to_vector(log_epsilon) ~ normal( log_epsilon_mu , log_epsilon_sigma );
+  to_vector(log_lambda) ~ normal( log_lambda_mu , log_lambda_sigma );
+  to_vector(log_theta) ~ normal( log_theta_mu , log_theta_sigma );
+  
+  // Model
+  /// Likelihood mean
+  //// Parameters
+  vector[n] a;
+  vector[n] mu;
+  vector[n] tau;
+
+  for ( i in 1:n ) {
+    a[i] = alpha[ Species[i], Treatment[i] ];
+    mu[i] = exp( log_mu[ Species[i], Treatment[i] ] );
+    tau[i] = exp( log_tau[ Species[i], Treatment[i] ] );
+  }
+  
+  //// Function
+  vector[n] p_mu = exp(
+      Day .* a - ( a + tau ) .* 
+      mu ./ 5 .* (
+        log1p_exp( 5 ./ mu .* ( Day - mu ) ) -
+        log1p_exp( -5 )
+      )
+    );
+  
+  /// Likelihood precision
+  //// Parameters
+  vector[n] epsilon;
+  vector[n] lambda;
+  vector[n] theta;
+  
+  for ( i in 1:n ) {
+    epsilon[i] = exp( log_epsilon[ Species[i], Treatment[i] ] );
+    lambda[i] = exp( log_lambda[ Species[i], Treatment[i] ] );
+    theta[i] = exp( log_theta[ Species[i], Treatment[i] ] );
+  }
+  
+  //// Function
+  vector[n] nu = theta + exp(
+      log( epsilon - theta ) - lambda .* Day
+    );
+  
+  // Beta prime likelihood
+  for ( i in 1:n ) { // loop because betap isn't vectorised
+    p[i] ~ betap( p_mu[i] * ( 1 + nu[i] ) , 2 + nu[i] );
+  }
+  
+  // Beta prime measurement error model
+  for ( i in 1:n ) {
+    Proportion_mean[i] ~ betap(
+      p[i] * ( 1 + Proportion_nu[i] ),
+      2 + Proportion_nu[i]
+    );
+  }
+  // for ( i in 1:n ) {
+  //   Proportion_mean[i] ~ betap(
+  //     p[i] * ( 1 + p[i] * ( 1 + p[i] ) / Proportion_sd[i]^2 ),
+  //     2 + p[i] * ( 1 + p[i] ) / Proportion_sd[i]^2
+  //   );
+  // }
+}

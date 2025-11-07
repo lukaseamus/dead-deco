@@ -88,7 +88,9 @@ prior_posterior_draws <- function(prior_samples, posterior_samples,
 }
 
 prior_posterior_plot <- function(prior_posterior_draws_long, 
-                                 group_name = NULL, ridges = TRUE) {
+                                 group_name = NULL, 
+                                 second_group_name = NULL,
+                                 ridges = FALSE) {
   
   if(is.null(group_name)) {
     prior_posterior_plot <- 
@@ -99,7 +101,7 @@ prior_posterior_plot <- function(prior_posterior_draws_long,
                 facet_wrap(~ .variable, scales = "free") +
                 theme_minimal() +
                 theme(panel.grid = element_blank())
-  } else if(!is.null(group_name) & ridges == TRUE) {
+  } else if(!is.null(group_name) & is.null(second_group_name) & ridges == TRUE) {
     group_name_parsed <- group_name %>% rlang::parse_expr()
     prior_posterior_plot <- 
       ggplot2::ggplot(data = prior_posterior_draws_long,
@@ -109,7 +111,7 @@ prior_posterior_plot <- function(prior_posterior_draws_long,
                 facet_wrap(~ .variable, scales = "free") +
                 theme_minimal() +
                 theme(panel.grid = element_blank())
-  } else if(!is.null(group_name) & ridges == FALSE) {
+  } else if(!is.null(group_name) & is.null(second_group_name) & ridges == FALSE) {
     group_name_parsed <- group_name %>% rlang::parse_expr()
     prior_posterior_plot <- 
       ggplot2::ggplot(data = prior_posterior_draws_long,
@@ -120,6 +122,32 @@ prior_posterior_plot <- function(prior_posterior_draws_long,
                                          scales = "free", nest_line = TRUE) +
                 theme_minimal() +
                 theme(panel.grid = element_blank())
+  } else if(!is.null(group_name) & !is.null(second_group_name) & ridges == TRUE) {
+    group_name_parsed <- group_name %>% rlang::parse_expr()
+    second_group_name_parsed <- second_group_name %>% rlang::parse_expr()
+    prior_posterior_plot <- 
+      ggplot2::ggplot(data = prior_posterior_draws_long,
+                      aes(x = .value, 
+                          y = interaction(!!group_name_parsed, !!second_group_name_parsed),
+                          alpha = distribution)) +
+      ggdist::stat_slab(height = 2, fill = "black") +
+      scale_alpha_manual(values = c(0.2, 0.6)) +
+      facet_wrap(~ .variable, scales = "free") +
+      theme_minimal() +
+      theme(panel.grid = element_blank())
+  } else if(!is.null(group_name) & !is.null(second_group_name) & ridges == FALSE) {
+    group_name_parsed <- group_name %>% rlang::parse_expr()
+    second_group_name_parsed <- second_group_name %>% rlang::parse_expr()
+    prior_posterior_plot <- 
+      ggplot2::ggplot(data = prior_posterior_draws_long,
+                      aes(x = .value, alpha = distribution)) +
+      geom_density(colour = NA, fill = "black") +
+      scale_alpha_manual(values = c(0.2, 0.6)) +
+      ggh4x::facet_nested_wrap(facets = vars(.variable, !!group_name_parsed,
+                                             !!second_group_name_parsed), 
+                               scales = "free", nest_line = TRUE) +
+      theme_minimal() +
+      theme(panel.grid = element_blank())
   } else {
     prior_posterior_plot <- "Not a valid data format or group."
   }
