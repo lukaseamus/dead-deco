@@ -9,7 +9,7 @@ functions{
 
 data{
   int n;
-  vector[n] Days;
+  vector[n] Day;
   vector[n] Proportion_mean;
   vector[n] Proportion_sd;
   array[n] int Species;
@@ -67,9 +67,9 @@ model{
   log_mu_mu ~ normal( log(40) , 0.3 );
   log_tau_mu ~ normal( log(0.06) , 0.4 );
   
-  alpha_sigma ~ normal( 0 , 0.01 ) T[0,]; // half-normal prior
-  log_mu_sigma ~ normal( 0 , 0.3 ) T[0,];
-  log_tau_sigma ~ normal( 0 , 0.4 ) T[0,];
+  alpha_sigma ~ normal( 0 , 0.02 ) T[0,]; // half-normal priors
+  log_mu_sigma ~ normal( 0 , 0.4 ) T[0,];
+  log_tau_sigma ~ normal( 0 , 0.5 ) T[0,];
   
   //// Species/treatment parameters
   to_vector(alpha_z) ~ normal( 0 , 1 );
@@ -83,7 +83,7 @@ model{
   /// Likelihood precision
   //// Global parameters
   log_epsilon_mu ~ normal( log(4e4) , 0.3 );
-  log_lambda_mu ~ normal( log(0.3) , 0.3 );
+  log_lambda_mu ~ normal( log(0.1) , 0.3 );
   log_theta_mu ~ normal( log(500) , 0.3 );
   
   log_epsilon_sigma ~ normal( 0 , 0.3 ) T[0,];
@@ -114,9 +114,9 @@ model{
 
   //// Function
   vector[n] p_mu = exp(
-      Days .* a - ( a + tau ) .* 
+      Day .* a - ( a + tau ) .* 
       mu ./ 5 .* (
-        log1p_exp( 5 ./ mu .* ( Days - mu ) ) -
+        log1p_exp( 5 ./ mu .* ( Day - mu ) ) -
         log1p_exp( -5 )
       )
     );
@@ -135,7 +135,7 @@ model{
   
   //// Function
   vector[n] nu = theta + exp(
-      log( epsilon - theta ) - lambda .* Days
+      log( epsilon - theta ) - lambda .* Day
     );
   
   // Beta prime likelihood
@@ -150,12 +150,6 @@ model{
       2 + Proportion_nu[i]
     );
   }
-  // for ( i in 1:n ) {
-  //   Proportion_mean[i] ~ betap(
-  //     p[i] * ( 1 + p[i] * ( 1 + p[i] ) / Proportion_sd[i]^2 ),
-  //     2 + p[i] * ( 1 + p[i] ) / Proportion_sd[i]^2
-  //   );
-  // }
 }
 
 generated quantities{

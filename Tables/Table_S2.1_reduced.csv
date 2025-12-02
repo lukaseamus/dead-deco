@@ -1,0 +1,11 @@
+Species,Mass,Treatment,k,alpha,mu,tau
+Laminaria digitata,Fresh,Live,0.053 ± 0.043,0.4 ± 0.19,114 ± 114,3.1 ± 2.1
+Laminaria digitata,Fresh,Dead,7.7 ± 0.78,-10 ± 1.1,47 ± 27,3 ± 1.5
+Ecklonia radiata,Dry,Live,1.8 ± 0.29,-1.7 ± 0.95,35 ± 37,3.2 ± 2.8
+Ecklonia radiata,Dry,Dead,11 ± 1.5,-15 ± 1.9,31 ± 4.8,1.9 ± 1.1
+Ecklonia radiata,Fresh,Live,1.4 ± 0.29,-1 ± 0.35,44 ± 38,3.8 ± 2.8
+Ecklonia radiata,Fresh,Dead,6.5 ± 1.1,-11 ± 1.8,36 ± 16,2.7 ± 1.2
+Amphibolis griffithii,Dry,Live,0.98 ± 0.08,-1.1 ± 0.38,44 ± 56,1.2 ± 1.3
+Amphibolis griffithii,Dry,Dead,1.5 ± 0.14,-2.8 ± 1.1,20 ± 9.6,0.77 ± 0.22
+Amphibolis griffithii,Fresh,Live,0.05 ± 0.039,0.17 ± 0.1,120 ± 85,2.9 ± 1.8
+Amphibolis griffithii,Fresh,Dead,0.12 ± 0.064,0.074 ± 0.14,105 ± 86,3 ± 1.9

@@ -1,0 +1,144 @@
+functions{
+  // Beta prime log probability density function
+  real betap_lpdf( real y , real alpha , real beta ) {
+    return ( alpha - 1 ) * log( y )
+    - ( alpha + beta ) * log1p( y ) -
+    lbeta( alpha , beta );
+  }
+}
+
+data{
+  int n;
+  vector[n] Day;
+  vector[n] Proportion;
+  array[n] int Species;
+  int n_Species;
+  array[n] int Treatment;
+  int n_Treatment;
+}
+
+parameters{
+  // Parameters describing mean
+  /// Global parameters
+  real alpha_mu;
+  real log_mu_mu;
+  real log_tau_mu;
+  
+  real<lower=0> alpha_sigma;
+  real<lower=0> log_mu_sigma;
+  real<lower=0> log_tau_sigma;
+  
+  /// Species/treatment parameters
+  matrix[n_Species, n_Treatment] alpha_z; // z-scores
+  matrix[n_Species, n_Treatment] log_mu_z;
+  matrix[n_Species, n_Treatment] log_tau_z;
+  
+  // Parameters describing precision
+  /// Global parameters
+  real log_epsilon_mu;
+  real log_lambda_mu;
+  real log_theta_mu;
+
+  real<lower=0> log_epsilon_sigma;
+  real<lower=0> log_lambda_sigma;
+  real<lower=0> log_theta_sigma;
+  
+  /// Species/treatment parameters
+  matrix[n_Species, n_Treatment] log_epsilon_z;
+  matrix[n_Species, n_Treatment] log_lambda_z;
+  matrix[n_Species, n_Treatment] log_theta_z;
+}
+
+model{
+  // Priors
+  /// Likelihood mean
+  //// Global parameters
+  alpha_mu ~ normal( -0.02 , 0.01 );
+  log_mu_mu ~ normal( log(40) , 0.3 );
+  log_tau_mu ~ normal( log(0.06) , 0.4 );
+  
+  alpha_sigma ~ normal( 0 , 0.02 ) T[0,]; // half-normal priors
+  log_mu_sigma ~ normal( 0 , 0.4 ) T[0,];
+  log_tau_sigma ~ normal( 0 , 0.5 ) T[0,];
+  
+  //// Species/treatment parameters
+  to_vector(alpha_z) ~ normal( 0 , 1 );
+  to_vector(log_mu_z) ~ normal( 0 , 1 );
+  to_vector(log_tau_z) ~ normal( 0 , 1 );
+
+  matrix[n_Species, n_Treatment] alpha = alpha_z * alpha_sigma + alpha_mu;
+  matrix[n_Species, n_Treatment] log_mu = log_mu_z * log_mu_sigma + log_mu_mu;
+  matrix[n_Species, n_Treatment] log_tau = log_tau_z * log_tau_sigma + log_tau_mu;
+  
+  /// Likelihood precision
+  //// Global parameters
+  log_epsilon_mu ~ normal( log(4e4) , 0.3 );
+  log_lambda_mu ~ normal( log(0.1) , 0.3 );
+  log_theta_mu ~ normal( log(500) , 0.3 );
+  
+  log_epsilon_sigma ~ normal( 0 , 0.3 ) T[0,];
+  log_lambda_sigma ~ normal( 0 , 0.3 ) T[0,];
+  log_theta_sigma ~ normal( 0 , 0.3 ) T[0,];
+  
+  //// Species/treatment parameters
+  to_vector(log_epsilon_z) ~ normal( 0 , 1 );
+  to_vector(log_lambda_z) ~ normal( 0 , 1 );
+  to_vector(log_theta_z) ~ normal( 0 , 1 );
+  
+  matrix[n_Species, n_Treatment] log_epsilon = log_epsilon_z * log_epsilon_sigma + log_epsilon_mu;
+  matrix[n_Species, n_Treatment] log_lambda = log_lambda_z * log_lambda_sigma + log_lambda_mu;
+  matrix[n_Species, n_Treatment] log_theta = log_theta_z * log_theta_sigma + log_theta_mu;
+  
+  // Model
+  /// Likelihood mean
+  //// Parameters
+  vector[n] a;
+  vector[n] mu;
+  vector[n] tau;
+
+  for ( i in 1:n ) {
+    a[i] = alpha[ Species[i], Treatment[i] ];
+    mu[i] = exp( log_mu[ Species[i], Treatment[i] ] );
+    tau[i] = exp( log_tau[ Species[i], Treatment[i] ] );
+  }
+
+  //// Function
+  vector[n] p_mu = exp(
+      Day .* a - ( a + tau ) .* 
+      mu ./ 5 .* (
+        log1p_exp( 5 ./ mu .* ( Day - mu ) ) -
+        log1p_exp( -5 )
+      )
+    );
+  
+  /// Likelihood precision
+  //// Parameters
+  vector[n] epsilon;
+  vector[n] lambda;
+  vector[n] theta;
+  
+  for ( i in 1:n ) {
+    epsilon[i] = exp( log_epsilon[ Species[i], Treatment[i] ] );
+    lambda[i] = exp( log_lambda[ Species[i], Treatment[i] ] );
+    theta[i] = exp( log_theta[ Species[i], Treatment[i] ] );
+  }
+  
+  //// Function
+  vector[n] nu = theta + exp(
+      log( epsilon - theta ) - lambda .* Day
+    );
+  
+  // Beta prime likelihood
+  for ( i in 1:n ) { // loop because betap isn't vectorised
+    Proportion[i] ~ betap( p_mu[i] * ( 1 + nu[i] ) , 2 + nu[i] );
+  }
+}
+
+generated quantities{
+  matrix[n_Species, n_Treatment] alpha = alpha_z * alpha_sigma + alpha_mu;
+  matrix[n_Species, n_Treatment] log_mu = log_mu_z * log_mu_sigma + log_mu_mu;
+  matrix[n_Species, n_Treatment] log_tau = log_tau_z * log_tau_sigma + log_tau_mu;
+  matrix[n_Species, n_Treatment] log_epsilon = log_epsilon_z * log_epsilon_sigma + log_epsilon_mu;
+  matrix[n_Species, n_Treatment] log_lambda = log_lambda_z * log_lambda_sigma + log_lambda_mu;
+  matrix[n_Species, n_Treatment] log_theta = log_theta_z * log_theta_sigma + log_theta_mu;
+}

@@ -5,23 +5,24 @@
 # 1.1 Load data ####
 require(tidyverse)
 require(magrittr)
+require(here)
 
-decouk <- read_csv("Decomposition_UK.csv", col_types = list("f", "f", "f")) %>%
-  mutate(Days = Hours / 24,
+decouk <- here("Decomposition", "Decomposition_UK.csv") %>% read_csv(col_types = list("f", "f", "f")) %>%
+  mutate(Day = Hour / 24,
          # Replace 0 with small constant within balance measurement error
          # because the model is undefined for y = 0
          Final = if_else(Final == 0, 1e-5, Final)) %T>%
   print()
 
-decoau <- read_csv("Decomposition_AU.csv", col_types = list("f", "f", "f", "f")) %>%
+decoau <- here("Decomposition", "Decomposition_AU.csv") %>% read_csv(col_types = list("f", "f", "f", "f")) %>%
   mutate(Deployment = Deployment %>% dmy(),
          Retrieval = Retrieval %>% dmy(),
-         Days = Deployment %--% Retrieval / ddays(),
+         Day = Deployment %--% Retrieval / ddays(),
          Final = if_else(Final == 0, 1e-5, Final),
          Dry = if_else(Dry == 0, 1e-6, Dry)) %T>%
   print()
 
-ratio <- read_csv("Ratio.csv", col_types = list("f", "f")) %>%
+ratio <- here("Decomposition", "Ratio.csv") %>% read_csv(col_types = list("f", "f")) %>%
   mutate(Ratio = Dry / Fresh) %T>%
   print()
 
@@ -66,8 +67,7 @@ tibble(n = 1:1e3,
 
 # 1.2.3 Stan model ####
 require(cmdstanr)
-require(here)
-ratio_model <- here("Stan", "ratio.stan") %>% 
+ratio_model <- here("Decomposition", "Stan", "ratio.stan") %>% 
   read_file() %>%
   write_stan_file() %>%
   cmdstan_model()
@@ -81,17 +81,17 @@ ratio_samples <- ratio_model$sample(
           parallel_chains = parallel::detectCores(),
           iter_warmup = 1e4,
           iter_sampling = 1e4,
-          adapt_delta = 0.99 # force sampler to slow down
+          adapt_delta = 0.99,
+          max_treedepth = 15 # force sampler to slow down
         )
 
 # 1.2.4 Model checks ####
 # Rhat
 ratio_samples$summary() %>%
-  mutate(rhat_check = rhat > 1.001) %>%
-  summarise(rhat_1.001 = sum(rhat_check) / length(rhat),
+  summarise(rhat_1.001 = mean( rhat > 1.001 ),
             rhat_mean = mean(rhat),
             rhat_sd = sd(rhat))
-# No rhat above 1.001. rhat = 1.00 ± 0.0000876.
+# No rhat above 1.001. rhat = 1.00 ± 0.0000816.
 
 # Chains
 require(bayesplot)
@@ -175,8 +175,8 @@ ratio_parameters <- ratio_prior_posterior %>%
             n = n()) %T>%
   print()
 # Species               beta_mean beta_sd cv_mean cv_sd     n
-# Unobserved                 0.28  0.11     0.36  0.71  80000
-# Prior                      0.29  0.14     0.97  1.4   80000
+# Unobserved                 0.28  0.11     0.36  0.74  80000
+# Prior                      0.29  0.14     0.99  1.4   80000
 # Ecklonia radiata           0.27  0.0063   0.13  0.018 80000
 # Amphibolis griffithii      0.25  0.004    0.087 0.012 80000
 
@@ -235,7 +235,8 @@ mytheme <- theme(panel.background = element_blank(),
                  legend.margin = margin(0, 0, 0, 0, unit = "cm"),
                  strip.background = element_blank(),
                  strip.text = element_text(size = 12, hjust = 0),
-                 panel.spacing = unit(1, "cm"),
+                 panel.spacing.x = unit(1, "cm"),
+                 panel.spacing.y = unit(0.6, "cm"),
                  text = element_text(family = "Futura"))
 
 # Plot
@@ -302,15 +303,16 @@ Fig_S1 <- ggplot() +
     labs(x = "Fresh mass (g)",
          y = "Dry mass (g)") +
     coord_cartesian(expand = FALSE, clip = "off") +
-    mytheme
+    mytheme +
+    theme(strip.text = element_text(face = "italic"))
 
 Fig_S1 %>%
   ggsave(filename = "Fig_S1_unedited.pdf", path = "Figures",
-         device = cairo_pdf, height = 10, width = 21, units = "cm")
+         device = cairo_pdf, height = 10, width = 20, units = "cm")
 # For some reason annotation font turns bold, so needs to be edited.
 
-# 1.3 Remaining proportion ####
-# 1.3.1 Dry proportion ####
+# 1.3 Remaining mass ####
+# 1.3.1 Dry mass ####
 # Calculate with ratio model parameters
 deco_dry <- decoau %>%
   left_join(
@@ -331,7 +333,7 @@ deco_dry <- decoau %>%
 # Summarise
 deco_dry_summary <- deco_dry %>%
   group_by(ID, Species, Treatment, Tank, Deployment, Initial, 
-           Retrieval, Final, Dry, Initials, Notes, Days) %>%
+           Retrieval, Final, Dry, Initials, Notes, Day) %>%
   summarise(
     beta_mean = mean(beta),
     beta_sd = sd(beta),
@@ -346,41 +348,39 @@ deco_dry_summary <- deco_dry %>%
   ungroup() %T>%
   print()
 
-# 1.3.2 Fresh proportion ####
+# 1.3.2 Fresh mass ####
 # Combine and calculate for both datasets 
-deco_wet <- decoau %>%
+deco_fresh <- decoau %>%
   select(ID, Species, Treatment, Initial, 
-         Final, Days, Initials) %>%
-  bind_rows(decouk %>% select(-Hours)) %>%
+         Final, Day, Initials) %>%
+  bind_rows(decouk %>% select(-Hour)) %>%
   mutate(Proportion = Final / Initial) %T>%
   print()
 
 # 2. Model data ####
-# 2.1 Dry proportion ####
+# 2.1 Dry mass optimal model ####
 # 2.1.1 Visualisation ####
 ggplot() +
   geom_violin(data = deco_dry,
-              aes(Days, Proportion, group = ID)) +
+              aes(Day, Proportion, group = ID)) +
   facet_grid(Treatment ~ Species) +
   theme_minimal()
 # This won't do for visualisation.
 
 ggplot() +
   geom_pointrange(data = deco_dry_summary,
-                  aes(Days, Proportion_mean,
+                  aes(Day, Proportion_mean,
                       ymin = Proportion_mean - Proportion_sd,
-                      ymax = Proportion_mean + Proportion_sd),
-                  position = position_dodge2(width = 1)) +
+                      ymax = Proportion_mean + Proportion_sd)) +
   facet_grid(Treatment ~ Species) +
   theme_minimal()
 # But ± s.d. clearly doesn't represent the skew.
 
 ggplot() +
   geom_pointrange(data = deco_dry_summary,
-                  aes(Days, Proportion_mean,
+                  aes(Day, Proportion_mean,
                       ymin = Proportion_lwr,
-                      ymax = Proportion_upr),
-                  position = position_dodge2(width = 1)) +
+                      ymax = Proportion_upr)) +
   facet_grid(Treatment ~ Species) +
   theme_minimal()
 # Better. It is clear that modelling the measurment error
@@ -411,14 +411,14 @@ log1p_exp <- function(x) {
 # much slower so I'll make the variability large enough to
 # include the smallest positive values.
 tibble(n = 1:1e3,
-       alpha_mu = rnorm( 1e3 , -0.02 , 0.01 ), 
+       alpha_mu = rnorm( 1e3 , -0.02 , 0.01 ),
        log_mu_mu = rnorm( 1e3 , log(40) , 0.3 ),
        log_tau_mu = rnorm( 1e3 , log(0.06) , 0.4 ),
-       alpha_sigma = rtnorm( 1e3 , 0 , 0.01 , 0 ), 
-       log_mu_sigma = rtnorm( 1e3 , 0 , 0.3 , 0 ),
-       log_tau_sigma = rtnorm( 1e3 , 0 , 0.4 , 0 ),
+       alpha_sigma = rtnorm( 1e3 , 0 , 0.02 , 0 ), # half-normal priors
+       log_mu_sigma = rtnorm( 1e3 , 0 , 0.4 , 0 ),
+       log_tau_sigma = rtnorm( 1e3 , 0 , 0.5 , 0 ),
        log_epsilon_mu = rnorm( 1e3 , log(4e4) , 0.3 ),
-       log_lambda_mu = rnorm( 1e3 , log(0.3) , 0.3 ),
+       log_lambda_mu = rnorm( 1e3 , log(0.1) , 0.3 ),
        log_theta_mu = rnorm( 1e3 , log(500) , 0.3 ),
        log_epsilon_sigma = rtnorm( 1e3 , 0 , 0.3 , 0 ),
        log_lambda_sigma = rtnorm( 1e3 , 0 , 0.3 , 0 ),
@@ -429,81 +429,75 @@ tibble(n = 1:1e3,
        epsilon = exp( rnorm( 1e3 , log_epsilon_mu , log_epsilon_sigma ) ),
        lambda = exp( rnorm( 1e3 , log_lambda_mu , log_lambda_sigma ) ),
        theta = exp( rnorm( 1e3 , log_theta_mu , log_theta_sigma ) )) %>%
-  expand_grid(Days = deco_dry_summary %$% 
-                seq(min(Days), max(Days), length.out = 100)) %>%
+  expand_grid(Day = deco_dry_summary %$% 
+                seq(min(Day), max(Day), length.out = 100)) %>%
   mutate(
     p_mu = exp(
-      Days * alpha - ( alpha + tau ) * mu / 5 * (
-        log1p_exp( 5 / mu * ( Days - mu ) ) - log1p_exp( -5 )
+      Day * alpha - ( alpha + tau ) * mu / 5 * (
+        log1p_exp( 5 / mu * ( Day - mu ) ) - log1p_exp( -5 )
       )
     ),
-    k = ( alpha + tau ) / ( 1 + exp( 5 / mu * ( Days - mu ) ) ) - tau,
-    nu = theta + exp( log(epsilon - theta) - lambda * Days ),
+    k = ( alpha + tau ) / ( 1 + exp( 5 / mu * ( Day - mu ) ) ) - tau,
+    nu = theta + exp( log(epsilon - theta) - lambda * Day ),
     p = rbetapr( n() , p_mu * ( 1 + nu ) , 2 + nu )
   ) %>%
   pivot_longer(cols = c(p_mu, k, nu, p),
                names_to = "parameter") %>%
-  ggplot(aes(Days, value, group = n)) +
+  ggplot(aes(Day, value, group = n)) +
     geom_line(alpha = 0.05) +
     coord_cartesian(expand = F, clip = "off") +
     facet_wrap(~parameter, scale = "free", nrow = 1) +
     theme_minimal() +
     theme(panel.grid = element_blank())
 
-# 2.1.3 Stan model ####
-dry_c_model <- here("Stan", "dry_c.stan") %>% 
+# 2.1.3 Stan models ####
+dry_c_model <- here("Decomposition", "Stan", "dry_c.stan") %>% 
   read_file() %>%
   write_stan_file() %>%
   cmdstan_model()
 
-dry_nc_model <- here("Stan", "dry_nc.stan") %>% 
+dry_nc_model <- here("Decomposition", "Stan", "dry_nc.stan") %>% 
   read_file() %>%
   write_stan_file() %>%
   cmdstan_model()
 
 dry_c_samples <- dry_c_model$sample(
           data = deco_dry_summary %>%
-            select(Days, Proportion_mean, Proportion_sd,
+            select(Day, Proportion_mean, Proportion_sd,
                    Species, Treatment) %>%
             compose_data(),
           chains = 8,
           parallel_chains = parallel::detectCores(),
           iter_warmup = 1e4,
-          iter_sampling = 1e4,
-          adapt_delta = 0.99,
-          treedepth = 15
+          iter_sampling = 1e4
         ) %T>%
   print(max_rows = 200)
 
 dry_nc_samples <- dry_nc_model$sample(
           data = deco_dry_summary %>%
-            select(Days, Proportion_mean, Proportion_sd,
+            select(Day, Proportion_mean, Proportion_sd,
                    Species, Treatment) %>%
             compose_data(),
           chains = 8,
           parallel_chains = parallel::detectCores(),
           iter_warmup = 1e4,
-          iter_sampling = 1e4,
-          adapt_delta = 0.99,
-          treedepth = 15
+          iter_sampling = 1e4
         ) %T>%
   print(max_rows = 200)
 
 # 2.1.4 Model checks ####
 # Rhat
 dry_c_samples$summary() %>%
-  mutate(rhat_check = rhat > 1.001) %>%
-  summarise(rhat_1.001 = sum(rhat_check) / length(rhat),
+  summarise(rhat_1.001 = mean( rhat > 1.001 ),
             rhat_mean = mean(rhat),
             rhat_sd = sd(rhat))
-# 2% of rhat above 1.001. rhat = 1.00 ± 0.000217.
+# 93% of rhat above 1.001. rhat = 1.00 ± 0.00123.
 
 dry_nc_samples$summary() %>%
-  mutate(rhat_check = rhat > 1.001) %>%
-  summarise(rhat_1.001 = sum(rhat_check) / length(rhat),
+  summarise(rhat_1.001 = mean( rhat > 1.001 ),
             rhat_mean = mean(rhat),
             rhat_sd = sd(rhat))
-# No rhat above 1.001. rhat = 1.00 ± 0.000121.
+# 99% of rhat above 1.001. rhat = 1.00 ± 0.0104.
 
 # Chains
 dry_c_samples$draws(format = "df") %>%
@@ -511,7 +505,7 @@ dry_c_samples$draws(format = "df") %>%
 
 dry_nc_samples$draws(format = "df") %>%
   mcmc_rank_overlay()
-# Chains are far better for non-centred model
+# Chains aren't great but somewhat better for the centred model
 
 # Pairs
 dry_c_samples$draws(format = "df") %>%
@@ -533,29 +527,27 @@ dry_nc_samples$draws(format = "df") %>%
   mcmc_pairs(pars = c("alpha[2,1]", "log_mu[2,1]", "log_tau[2,1]"))
 dry_nc_samples$draws(format = "df") %>%
   mcmc_pairs(pars = c("alpha[2,2]", "log_mu[2,2]", "log_tau[2,2]"))
-
+# Correlations look pretty similar for centred and non-centred models
 
 # 2.1.5 Prior-posterior comparison ####
 dry_c_prior <- prior_samples(
   model = dry_c_model,
   data = deco_dry_summary %>%
-    select(Days, Proportion_mean, Proportion_sd,
+    select(Day, Proportion_mean, Proportion_sd,
            Species, Treatment) %>%
-    compose_data(),
-  adapt_delta = 0.99,
-  max_treedepth = 15
+    compose_data()
   )
-# cannot effectively sample centred hierarchical priors
+# Too many divergences, cannot effectively sample centred hierarchical priors
 
 dry_nc_prior <- prior_samples(
   model = dry_nc_model,
   data = deco_dry_summary %>%
-    select(Days, Proportion_mean, Proportion_sd,
+    select(Day, Proportion_mean, Proportion_sd,
            Species, Treatment) %>%
     compose_data()
-)
+  )
+# Works smoothly -> use only non-centred priors, because they are the same
 
-# use only non-centred priors
 dry_nc_prior %>% 
   prior_posterior_draws(
     posterior_samples = dry_c_samples,
@@ -603,8 +595,38 @@ dry_nc_prior %>%
     group_name = "Species", 
     second_group_name = "Treatment"
   )
+# Posteriors are somewhat smoother for the centred model
+# Since both models were suboptimal and the non-centred
+# model has a better chance of improving with slower
+# sampling, I will re-run the non-centred model
 
-# 2.1.6 Prediction ####
+# 2.1.6 Rerun optimal model ####
+dry_nc_samples <- dry_nc_model$sample(
+          data = deco_dry_summary %>%
+            select(Day, Proportion_mean, Proportion_sd,
+                   Species, Treatment) %>%
+            compose_data(),
+          chains = 8,
+          parallel_chains = parallel::detectCores(),
+          iter_warmup = 1e4,
+          iter_sampling = 1e4,
+          adapt_delta = 0.99, # force slower sampling to reduce divergences
+          max_treedepth = 15
+        ) %T>%
+  print(max_rows = 200)
+# Patience!
+
+dry_nc_samples$summary() %>%
+  summarise(rhat_1.001 = mean( rhat > 1.001 ),
+            rhat_mean = mean(rhat),
+            rhat_sd = sd(rhat))
+# 1% of rhat above 1.001. rhat = 1.00 ± 0.000159.
+
+dry_nc_samples$draws(format = "df") %>%
+  mcmc_rank_overlay()
+# Chains are very good
+
+# 2.1.7 Prediction ####
 # Global parameters
 dry_prior_posterior_global <- dry_nc_prior %>% 
   prior_posterior_draws(
@@ -668,6 +690,48 @@ dry_prior_posterior %>%
   group_by(Species, Treatment, parameter) %>%
   summarise(mean = mean(value), sd = sd(value), n = n()) %>%
   print(n = 36)
+# For dead E. radiata initial decay (0.147 d^-1) is faster than 
+# final decay (0.0186 d^-1), suggesting that the logistic function
+# describes an decrease in decay with time. The direction of the 
+# logistic slope is not enforced in the model but in the normal 
+# case where detrital photosynthesis is present, there is always 
+# an increase in decay with time.
+
+# Calculate rounded values for supplementary table
+dry_parameters <- dry_prior_posterior %>%
+  select(!starts_with(".")) %>%
+  filter(Treatment != "Prior") %>%
+  group_by(Species, Treatment) %>%
+  summarise(
+    across( everything(), list(mean = mean, sd = sd) ),
+    n = n()
+  ) %>%
+  ungroup() %>%
+  mutate( # Note I am converting dimensionless rates to %
+    alpha = glue("{signif(alpha_mean*100, 2)} ± {signif(alpha_sd*100, 2)}"),
+    mu = glue("{signif(mu_mean, 2)} ± {signif(mu_sd, 2)}"),
+    tau = glue("{signif(tau_mean*100, 2)} ± {signif(tau_sd*100, 2)}"),
+    epsilon = glue("{signif(epsilon_mean, 5)} ± {signif(epsilon_sd, 5)}"),
+    lambda = glue("{signif(lambda_mean, 2)} ± {signif(lambda_sd, 2)}"),
+    theta_mean_rounded = case_when(
+      theta_mean < 100 ~ signif(theta_mean, 2), 
+      theta_mean < 1e3 ~ signif(theta_mean, 3),
+      theta_mean < 1e4 ~ signif(theta_mean, 4)
+    ),
+    theta_sd_rounded = case_when(
+      theta_sd < 100 ~ signif(theta_sd, 2), 
+      theta_sd < 1e3 ~ signif(theta_sd, 3),
+      theta_sd < 1e4 ~ signif(theta_sd, 4)
+    ),
+    theta = glue("{theta_mean_rounded} ± {theta_sd_rounded}")
+  ) %>%
+  select(!(contains("mean") | contains("sd"))) %T>%
+  print()
+# Species               Treatment     n alpha       mu       tau         epsilon       lambda      theta      
+# Ecklonia radiata      Live      80000 -1.7 ± 0.95 35 ± 37  3.2 ± 2.8   40732 ± 19290 0.42 ± 0.1  0.49 ± 0.29
+# Ecklonia radiata      Dead      80000 -15 ± 1.9   31 ± 4.8 1.9 ± 1.1   39689 ± 18998 1.3 ± 0.79  8.5 ± 4.6  
+# Amphibolis griffithii Live      80000 -1.1 ± 0.38 44 ± 56  1.2 ± 1.3   41924 ± 20599 0.18 ± 0.24 1772 ± 3279
+# Amphibolis griffithii Dead      80000 -2.8 ± 1.1  20 ± 9.6 0.77 ± 0.22 42161 ± 21956 0.19 ± 0.24 1804 ± 3334
 
 # Predict across predictor range
 dry_prediction <- dry_prior_posterior %>%
@@ -675,51 +739,973 @@ dry_prediction <- dry_prior_posterior %>%
                       # Ensure predictor range starts at 0
                       bind_rows(
                         expand_grid(
-                          Days = 0, 
+                          Day = 0, 
                           Proportion_mean = 1,
                           Species = c("Ecklonia radiata", "Amphibolis griffithii"),
                           Treatment = c("Live", "Dead")
                         ) 
                       ), 
                     # all groups have the same predictor range
-                    predictor_name = "Days", length = 200) %>%
+                    predictor_name = "Day", length = 200) %>%
   mutate(
     p_mu = exp(
-      Days * alpha - ( alpha + tau ) * mu / 5 * (
-        log1p_exp( 5 / mu * ( Days - mu ) ) - log1p_exp( -5 )
+      Day * alpha - ( alpha + tau ) * mu / 5 * (
+        log1p_exp( 5 / mu * ( Day - mu ) ) - log1p_exp( -5 )
       )
     ),
-    k = ( alpha + tau ) / ( 1 + exp( 5 / mu * ( Days - mu ) ) ) - tau,
-    nu = ( epsilon - theta ) * exp( -lambda * Days ) + theta,
+    k = ( alpha + tau ) / ( 1 + exp( 5 / mu * ( Day - mu ) ) ) - tau,
+    nu = ( epsilon - theta ) * exp( -lambda * Day ) + theta,
     p = rbetapr( n() , p_mu * ( 1 + nu ) , 2 + nu )
   ) %>% # Summarise predictions
-  group_by(Days, Species, Treatment) %>%
+  group_by(Day, Species, Treatment) %>%
   median_qi(p_mu, k, nu, p, .width = c(.5, .8, .9)) %T>%
   print()
 
-Fig_1a <- dry_prediction %>%
+# Save progress and clean up
+dry_prior_posterior %>%
+  write_rds(here("Decomposition", "RDS", "dry_prior_posterior.rds"))
+dry_prediction %>%
+  write_rds(here("Decomposition", "RDS", "dry_prediction.rds"))
+
+rm(list = ls(pattern = "ratio"), dry_c_model, dry_c_prior, dry_c_samples,
+   dry_nc_model, dry_nc_prior, dry_nc_samples)
+
+# 2.2 Dry mass naive model ####
+# 2.2.1 Prior simulation ####
+# The classic exponential decay model for proportions is e^-k*t.
+# I am again taking 0.06 d^-1, the mean k value for Ecklonia radiata 
+# from Simpkins et al. 2025 (doi: 10.1002/lno.70006) as my prior.
+tibble(n = 1:1e3,
+       log_k_mu = rnorm( 1e3 , log(0.06) , 0.5 ),
+       log_sigma_mu = rnorm( 1e3 , log(0.1) , 0.4 ),
+       log_k_sigma = rtnorm( 1e3 , 0 , 0.6 , 0 ),
+       log_sigma_sigma = rtnorm( 1e3 , 0 , 0.5 , 0 ),
+       k = exp( rnorm( 1e3 , log_k_mu , log_k_sigma ) ),
+       sigma = exp( rnorm( 1e3 , log_sigma_mu , log_sigma_sigma ) )) %>%
+  expand_grid(Day = deco_dry_summary %$% 
+                seq(min(Day), max(Day), length.out = 100)) %>%
+  mutate(
+    p_mu = exp( -k * Day ),
+    p = rnorm( n() , p_mu , sigma )
+  ) %>%
+  pivot_longer(cols = c(p_mu, p),
+               names_to = "parameter") %>%
+  ggplot(aes(Day, value, group = n)) +
+    geom_line(alpha = 0.05) +
+    coord_cartesian(expand = F, clip = "off") +
+    facet_wrap(~parameter, scale = "free", nrow = 1) +
+    theme_minimal() +
+    theme(panel.grid = element_blank())
+
+# 2.2.2 Stan models ####
+dry_k_c_model <- here("Decomposition", "Stan", "dry_k_c.stan") %>% 
+  read_file() %>%
+  write_stan_file() %>%
+  cmdstan_model()
+
+dry_k_nc_model <- here("Decomposition", "Stan", "dry_k_nc.stan") %>% 
+  read_file() %>%
+  write_stan_file() %>%
+  cmdstan_model()
+
+dry_k_c_samples <- dry_k_c_model$sample(
+          data = deco_dry_summary %>%
+            select(Day, Proportion_mean,
+                   Species, Treatment) %>%
+            compose_data(),
+          chains = 8,
+          parallel_chains = parallel::detectCores(),
+          iter_warmup = 1e4,
+          iter_sampling = 1e4
+        ) %T>%
+  print(max_rows = 200)
+
+dry_k_nc_samples <- dry_k_nc_model$sample(
+          data = deco_dry_summary %>%
+            select(Day, Proportion_mean,
+                   Species, Treatment) %>%
+            compose_data(),
+          chains = 8,
+          parallel_chains = parallel::detectCores(),
+          iter_warmup = 1e4,
+          iter_sampling = 1e4
+        ) %T>%
+  print(max_rows = 200)
+
+# 2.2.3 Model checks ####
+# Rhat
+dry_k_c_samples$summary() %>%
+  summarise(rhat_1.001 = mean( rhat > 1.001 ),
+            rhat_mean = mean(rhat),
+            rhat_sd = sd(rhat))
+# No rhat above 1.001. rhat = 1.00 ± 0.0000611.
+
+dry_k_nc_samples$summary() %>%
+  summarise(rhat_1.001 = mean( rhat > 1.001 ),
+            rhat_mean = mean(rhat),
+            rhat_sd = sd(rhat))
+# No rhat above 1.001. rhat = 1.00 ± 0.0000705.
+
+# Chains
+dry_k_c_samples$draws(format = "df") %>%
+  mcmc_rank_overlay()
+
+dry_k_nc_samples$draws(format = "df") %>%
+  mcmc_rank_overlay()
+# No difference in chains
+
+# Pairs
+dry_k_c_samples$draws(format = "df") %>%
+  mcmc_pairs(pars = c("log_k[1,1]", "log_sigma[1,1]"))
+dry_k_c_samples$draws(format = "df") %>%
+  mcmc_pairs(pars = c("log_k[1,2]", "log_sigma[1,2]"))
+
+dry_k_c_samples$draws(format = "df") %>%
+  mcmc_pairs(pars = c("log_k[2,1]", "log_sigma[2,1]"))
+dry_k_c_samples$draws(format = "df") %>%
+  mcmc_pairs(pars = c("log_k[2,2]", "log_sigma[2,2]"))
+
+dry_k_nc_samples$draws(format = "df") %>%
+  mcmc_pairs(pars = c("log_k[1,1]", "log_sigma[1,1]"))
+dry_k_nc_samples$draws(format = "df") %>%
+  mcmc_pairs(pars = c("log_k[1,2]", "log_sigma[1,2]"))
+
+dry_k_nc_samples$draws(format = "df") %>%
+  mcmc_pairs(pars = c("log_k[2,1]", "log_sigma[2,1]"))
+dry_k_nc_samples$draws(format = "df") %>%
+  mcmc_pairs(pars = c("log_k[2,2]", "log_sigma[2,2]"))
+# Correlations are absent for both models
+
+# 2.2.4 Prior-posterior comparison ####
+dry_k_c_prior <- prior_samples(
+  model = dry_k_c_model,
+  data = deco_dry_summary %>%
+    select(Day, Proportion_mean, Proportion_sd,
+           Species, Treatment) %>%
+    compose_data()
+  )
+# Too many divergences, cannot effectively sample centred hierarchical priors
+
+dry_k_nc_prior <- prior_samples(
+  model = dry_k_nc_model,
+  data = deco_dry_summary %>%
+    select(Day, Proportion_mean, Proportion_sd,
+           Species, Treatment) %>%
+    compose_data()
+  )
+# Works smoothly -> use only non-centred priors, because they are the same
+
+dry_k_nc_prior %>% 
+  prior_posterior_draws(
+    posterior_samples = dry_k_c_samples,
+    group = deco_dry_summary %>%
+      select(Species, Treatment),
+    parameters = c("log_k_mu", "log_k_sigma",
+                   "log_k[Species, Treatment]", 
+                   "log_sigma_mu", "log_sigma_sigma",
+                   "log_sigma[Species, Treatment]"),
+    format = "long"
+    ) %>%
+  prior_posterior_plot(
+    group_name = "Species", 
+    second_group_name = "Treatment"
+  )
+
+dry_k_nc_prior %>% 
+  prior_posterior_draws(
+    posterior_samples = dry_k_nc_samples,
+    group = deco_dry_summary %>%
+      select(Species, Treatment),
+    parameters = c("log_k_mu", "log_k_sigma",
+                   "log_k[Species, Treatment]", 
+                   "log_sigma_mu", "log_sigma_sigma",
+                   "log_sigma[Species, Treatment]"),
+    format = "long"
+    ) %>%
+  prior_posterior_plot(
+    group_name = "Species", 
+    second_group_name = "Treatment"
+  )
+# Posteriors look similarly smooth
+# Proceed with the centred model
+
+# 2.2.5 Prediction ####
+# Global parameters
+dry_k_prior_posterior_global <- dry_k_nc_prior %>% 
+  prior_posterior_draws(
+    posterior_samples = dry_k_c_samples,
+    parameters = c("log_k_mu", "log_k_sigma",
+                   "log_sigma_mu", "log_sigma_sigma"),
+    format = "short"
+  ) %>%
+  mutate( # Calculate parameters for unobserved species/treatments
+    k = rnorm( n() , log_k_mu , log_k_sigma ) %>% exp(),
+    sigma = rnorm( n() , log_sigma_mu , log_sigma_sigma ) %>% exp()
+  ) %>%
+  select(starts_with("."), distribution, k, sigma) %T>%
+  print()
+
+dry_k_prior_posterior_global %>%
+  pivot_longer(cols = -c(starts_with("."), distribution),
+               names_to = "parameter") %>%
+  group_by(distribution, parameter) %>%
+  summarise(mean = mean(value), sd = sd(value), n = n())
+
+# Species/treatment parameters
+dry_k_prior_posterior <- dry_k_nc_prior %>% 
+  prior_posterior_draws(
+    posterior_samples = dry_k_c_samples,
+    group = deco_dry_summary %>%
+      select(Species, Treatment),
+    parameters = c("log_k[Species, Treatment]", 
+                   "log_sigma[Species, Treatment]"),
+    format = "short"
+  ) %>% 
+  mutate(across( # Exponentiate all logged parameters
+    starts_with("log"), ~ exp(.x), .names = "{sub('^log_', '', .col)}"
+  )) %>% # Remove redundant priors within species
+  filter(!(Treatment == "Dead" & distribution == "prior")) %>%
+  mutate( # Embed prior in treatment
+    Treatment = if_else(
+      distribution == "prior", "Prior", Treatment
+    ) %>% fct()
+  ) %>%
+  select(starts_with("."), Species, Treatment, k, sigma) %T>%
+  print()
+
+dry_k_prior_posterior %>%
+  pivot_longer(cols = -c(starts_with("."), Species, Treatment),
+               names_to = "parameter") %>%
+  group_by(Species, Treatment, parameter) %>%
+  summarise(mean = mean(value), sd = sd(value), n = n()) %>%
+  print(n = 12)
+
+# Calculate rounded values for main table
+dry_k_parameters <- dry_k_prior_posterior %>%
+  select(!starts_with(".")) %>%
   filter(Treatment != "Prior") %>%
+  group_by(Species, Treatment) %>%
+  summarise(
+    across( everything(), list(mean = mean, sd = sd) ),
+    n = n()
+  ) %>%
+  ungroup() %>%
+  mutate( # Note I am converting dimensionless rates to %
+    k = glue("{signif(k_mean*100, 2)} ± {signif(k_sd*100, 2)}"),
+    sigma = glue("{signif(sigma_mean, 2)} ± {signif(sigma_sd, 2)}")
+  ) %>%
+  select(!(contains("mean") | contains("sd"))) %T>%
+  print()
+# Species               Treatment     n k           sigma        
+# Ecklonia radiata      Live      80000 1.8 ± 0.29  0.26 ± 0.036 
+# Ecklonia radiata      Dead      80000 11 ± 1.5    0.12 ± 0.017 
+# Amphibolis griffithii Live      80000 0.98 ± 0.08 0.076 ± 0.017
+# Amphibolis griffithii Dead      80000 1.5 ± 0.14  0.096 ± 0.02 
+
+# Calculate contrasts
+dry_contrast <- dry_k_prior_posterior %>%
+  filter(Treatment != "Prior") %>%
+  select(-sigma) %>%
+  pivot_wider(names_from = Treatment, values_from = k) %>%
+  mutate(difference = Dead - Live,
+         ratio = Dead / Live,
+         log_ratio = log10(ratio)) %T>%
+  print()
+
+# Summarise contrasts for main table
+dry_contrast_summary <- dry_contrast %>%
+  select(!starts_with(".")) %>%
+  group_by(Species) %>%
+  summarise(
+    across( everything(), list(mean = mean, sd = sd) ),
+    n = n(),
+    P = mean( difference > 0 ) %>% signif(2)
+  ) %>%
+  ungroup() %>%
+  mutate( # Note I am converting dimensionless rates to %
+    Live = glue("{signif(Live_mean*100, 2)} ± {signif(Live_sd*100, 2)}"),
+    Dead = glue("{signif(Dead_mean*100, 2)} ± {signif(Dead_sd*100, 2)}"),
+    difference = glue("{signif(difference_mean*100, 2)} ± {signif(difference_sd*100, 2)}"),
+    ratio = glue("{signif(ratio_mean, 2)} ± {signif(ratio_sd, 2)}"),
+    log_ratio = glue("{signif(log_ratio_mean, 2)} ± {signif(log_ratio_sd, 2)}")
+  ) %>%
+  select(!(contains("mean") | contains("sd"))) %T>%
+  print()
+# Species                   n     P Live        Dead       difference  ratio      log_ratio   
+# Ecklonia radiata      80000     1 1.8 ± 0.29  11 ± 1.5   9.1 ± 1.5   6.3 ± 1.4  0.79 ± 0.093
+# Amphibolis griffithii 80000     1 0.98 ± 0.08 1.5 ± 0.14 0.52 ± 0.16 1.5 ± 0.19 0.19 ± 0.053
+
+# Predict across predictor range
+dry_k_prediction <- dry_k_prior_posterior %>%
+  spread_continuous(data = deco_dry_summary %>%
+                      # Ensure predictor range starts at 0
+                      bind_rows(
+                        expand_grid(
+                          Day = 0, 
+                          Proportion_mean = 1,
+                          Species = c("Ecklonia radiata", "Amphibolis griffithii"),
+                          Treatment = c("Live", "Dead")
+                        ) 
+                      ), 
+                    # all groups have the same predictor range
+                    predictor_name = "Day") %>%
+  mutate(
+    p_mu = exp( -k * Day ),
+    p = rnorm( n() , p_mu , sigma )
+  ) %>% # Summarise predictions
+  group_by(Day, Species, Treatment) %>%
+  median_qi(p_mu, p, .width = c(.5, .8, .9)) %T>%
+  print()
+
+# Save progress and clean up
+dry_k_prior_posterior %>%
+  write_rds(here("Decomposition", "RDS", "dry_k_prior_posterior.rds"))
+dry_contrast %>%
+  write_rds(here("Decomposition", "RDS", "dry_contrast.rds"))
+dry_k_prediction %>%
+  write_rds(here("Decomposition", "RDS", "dry_k_prediction.rds"))
+
+rm(dry_k_c_model, dry_k_c_prior, dry_k_c_samples,
+   dry_k_nc_model, dry_k_nc_prior, dry_k_nc_samples)
+
+# 2.3 Fresh mass optimal model ####
+# 2.3.1 Visualisation ####
+ggplot() +
+  geom_point(data = deco_fresh,
+             aes(Day, Proportion)) +
+  facet_grid(Treatment ~ Species) +
+  theme_minimal()
+
+# 2.3.2 Prior simulation ####
+# Same as 2.1.2
+
+# 2.3.3 Stan models ####
+fresh_c_model <- here("Decomposition", "Stan", "fresh_c.stan") %>% 
+  read_file() %>%
+  write_stan_file() %>%
+  cmdstan_model()
+
+fresh_nc_model <- here("Decomposition", "Stan", "fresh_nc.stan") %>% 
+  read_file() %>%
+  write_stan_file() %>%
+  cmdstan_model()
+
+fresh_c_samples <- fresh_c_model$sample(
+          data = deco_fresh %>%
+            select(Day, Proportion, Species, Treatment) %>%
+            compose_data(),
+          chains = 8,
+          parallel_chains = parallel::detectCores(),
+          iter_warmup = 1e4,
+          iter_sampling = 1e4
+        ) %T>%
+  print(max_rows = 200)
+
+fresh_nc_samples <- fresh_nc_model$sample(
+          data = deco_fresh %>%
+            select(Day, Proportion, Species, Treatment) %>%
+            compose_data(),
+          chains = 8,
+          parallel_chains = parallel::detectCores(),
+          iter_warmup = 1e4,
+          iter_sampling = 1e4
+        ) %T>%
+  print(max_rows = 200)
+
+# 2.3.4 Model checks ####
+# Rhat
+fresh_c_samples$summary() %>%
+  summarise(rhat_1.001 = mean( rhat > 1.001 ),
+            rhat_mean = mean(rhat),
+            rhat_sd = sd(rhat))
+# 84% of rhat above 1.001. rhat = 1.00 ± 0.00365.
+
+fresh_nc_samples$summary() %>%
+  summarise(rhat_1.001 = mean( rhat > 1.001 ),
+            rhat_mean = mean(rhat),
+            rhat_sd = sd(rhat))
+# No rhat above 1.001. rhat = 1.00 ± 0.0000869.
+
+# Chains
+fresh_c_samples$draws(format = "df") %>%
+  mcmc_rank_overlay()
+
+fresh_nc_samples$draws(format = "df") %>%
+  mcmc_rank_overlay()
+# Chains are better for the non-centred model
+
+# Pairs
+fresh_c_samples$draws(format = "df") %>%
+  mcmc_pairs(pars = c("alpha[1,1]", "log_mu[1,1]", "log_tau[1,1]"))
+fresh_c_samples$draws(format = "df") %>%
+  mcmc_pairs(pars = c("alpha[1,2]", "log_mu[1,2]", "log_tau[1,2]"))
+
+fresh_c_samples$draws(format = "df") %>%
+  mcmc_pairs(pars = c("alpha[2,1]", "log_mu[2,1]", "log_tau[2,1]"))
+fresh_c_samples$draws(format = "df") %>%
+  mcmc_pairs(pars = c("alpha[2,2]", "log_mu[2,2]", "log_tau[2,2]"))
+
+fresh_nc_samples$draws(format = "df") %>%
+  mcmc_pairs(pars = c("alpha[1,1]", "log_mu[1,1]", "log_tau[1,1]"))
+fresh_nc_samples$draws(format = "df") %>%
+  mcmc_pairs(pars = c("alpha[1,2]", "log_mu[1,2]", "log_tau[1,2]"))
+
+fresh_nc_samples$draws(format = "df") %>%
+  mcmc_pairs(pars = c("alpha[2,1]", "log_mu[2,1]", "log_tau[2,1]"))
+fresh_nc_samples$draws(format = "df") %>%
+  mcmc_pairs(pars = c("alpha[2,2]", "log_mu[2,2]", "log_tau[2,2]"))
+# Correlations look fairly similar
+
+# 2.3.5 Prior-posterior comparison ####
+fresh_c_prior <- prior_samples(
+  model = fresh_c_model,
+  data = deco_fresh %>%
+    select(Day, Proportion, Species, Treatment) %>%
+    compose_data()
+  )
+# Too many divergences, cannot effectively sample centred hierarchical priors
+
+fresh_nc_prior <- prior_samples(
+  model = fresh_nc_model,
+  data = deco_fresh %>%
+    select(Day, Proportion, Species, Treatment) %>%
+    compose_data()
+  )
+# Works smoothly -> use only non-centred priors, because they are the same
+
+fresh_nc_prior %>% 
+  prior_posterior_draws(
+    posterior_samples = fresh_c_samples,
+    group = deco_fresh %>%
+      select(Species, Treatment),
+    parameters = c("alpha_mu", "alpha_sigma",
+                   "alpha[Species, Treatment]", 
+                   "log_mu_mu", "log_mu_sigma",
+                   "log_mu[Species, Treatment]", 
+                   "log_tau_mu", "log_tau_sigma",
+                   "log_tau[Species, Treatment]",
+                   "log_epsilon_mu", "log_epsilon_sigma",
+                   "log_epsilon[Species, Treatment]", 
+                   "log_lambda_mu", "log_lambda_sigma",
+                   "log_lambda[Species, Treatment]",
+                   "log_theta_mu", "log_theta_sigma",
+                   "log_theta[Species, Treatment]"),
+    format = "long"
+    ) %>%
+  prior_posterior_plot(
+    group_name = "Species", 
+    second_group_name = "Treatment"
+  )
+
+fresh_nc_prior %>% 
+  prior_posterior_draws(
+    posterior_samples = fresh_nc_samples,
+    group = deco_fresh %>%
+      select(Species, Treatment),
+    parameters = c("alpha_mu", "alpha_sigma",
+                   "alpha[Species, Treatment]", 
+                   "log_mu_mu", "log_mu_sigma",
+                   "log_mu[Species, Treatment]", 
+                   "log_tau_mu", "log_tau_sigma",
+                   "log_tau[Species, Treatment]",
+                   "log_epsilon_mu", "log_epsilon_sigma",
+                   "log_epsilon[Species, Treatment]", 
+                   "log_lambda_mu", "log_lambda_sigma",
+                   "log_lambda[Species, Treatment]",
+                   "log_theta_mu", "log_theta_sigma",
+                   "log_theta[Species, Treatment]"),
+    format = "long"
+    ) %>%
+  prior_posterior_plot(
+    group_name = "Species", 
+    second_group_name = "Treatment"
+  )
+# Posteriors are smoother for non-centred model.
+# The non-centred model is chosen as optimal.
+
+# 2.3.6 Prediction ####
+# Global parameters
+fresh_prior_posterior_global <- fresh_nc_prior %>% 
+  prior_posterior_draws(
+    posterior_samples = fresh_nc_samples,
+    parameters = c("alpha_mu", "alpha_sigma",
+                   "log_mu_mu", "log_mu_sigma",
+                   "log_tau_mu", "log_tau_sigma",
+                   "log_epsilon_mu", "log_epsilon_sigma",
+                   "log_lambda_mu", "log_lambda_sigma",
+                   "log_theta_mu", "log_theta_sigma"),
+    format = "short"
+  ) %>%
+  mutate( # Calculate parameters for unobserved species/treatments
+    alpha = rnorm( n() , alpha_mu , alpha_sigma ),
+    mu = rnorm( n() , log_mu_mu , log_mu_sigma ) %>% exp(),
+    tau = rnorm( n() , log_tau_mu , log_tau_sigma ) %>% exp(),
+    epsilon = rnorm( n() , log_epsilon_mu , log_epsilon_sigma ) %>% exp(),
+    lambda = rnorm( n() , log_lambda_mu , log_lambda_sigma ) %>% exp(),
+    theta = rnorm( n() , log_theta_mu , log_theta_sigma ) %>% exp()
+  ) %>%
+  select(starts_with("."), distribution, 
+         alpha, mu, tau, epsilon, lambda, theta) %T>%
+  print()
+
+fresh_prior_posterior_global %>%
+  pivot_longer(cols = -c(starts_with("."), distribution),
+               names_to = "parameter") %>%
+  group_by(distribution, parameter) %>%
+  summarise(mean = mean(value), sd = sd(value), n = n())
+
+# Species/treatment parameters
+fresh_prior_posterior <- fresh_nc_prior %>% 
+  prior_posterior_draws(
+    posterior_samples = fresh_nc_samples,
+    group = deco_fresh %>%
+      select(Species, Treatment),
+    parameters = c("alpha[Species, Treatment]", 
+                   "log_mu[Species, Treatment]", 
+                   "log_tau[Species, Treatment]", 
+                   "log_epsilon[Species, Treatment]", 
+                   "log_lambda[Species, Treatment]", 
+                   "log_theta[Species, Treatment]"),
+    format = "short"
+  ) %>% 
+  mutate(across( # Exponentiate all logged parameters
+    starts_with("log"), ~ exp(.x), .names = "{sub('^log_', '', .col)}"
+  )) %>% # Remove redundant priors within species
+  filter(!(Treatment == "Dead" & distribution == "prior")) %>%
+  mutate( # Embed prior in treatment
+    Treatment = if_else(
+      distribution == "prior", "Prior", Treatment
+    ) %>% fct()
+  ) %>%
+  select(starts_with("."), Species, Treatment, 
+         alpha, mu, tau, epsilon, lambda, theta) %T>%
+  print()
+
+fresh_prior_posterior %>%
+  pivot_longer(cols = -c(starts_with("."), Species, Treatment),
+               names_to = "parameter") %>%
+  group_by(Species, Treatment, parameter) %>%
+  summarise(mean = mean(value), sd = sd(value), n = n()) %>%
+  print(n = 54)
+# For dead E. radiata initial decay (0.11 d^-1) is again faster than 
+# final decay (0.0271 d^-1). The same is the case for dead L. digitata,
+# with 0.1 d^-1 initial decay and 0.0301 d^-1 final decay.
+
+# Calculate rounded values for supplementary table
+fresh_parameters <- fresh_prior_posterior %>%
+  select(!starts_with(".")) %>%
+  filter(Treatment != "Prior") %>%
+  group_by(Species, Treatment) %>%
+  summarise(
+    across( everything(), list(mean = mean, sd = sd) ),
+    n = n()
+  ) %>%
+  ungroup() %>%
+  mutate( # Note I am converting dimensionless rates to %
+    alpha = glue("{signif(alpha_mean*100, 2)} ± {signif(alpha_sd*100, 2)}"),
+    mu_mean_rounded = if_else(mu_mean < 100, signif(mu_mean, 2), signif(mu_mean, 3)),
+    mu_sd_rounded = if_else(mu_sd < 100, signif(mu_sd, 2), signif(mu_sd, 3)),
+    mu = glue("{mu_mean_rounded} ± {mu_sd_rounded}"),
+    tau = glue("{signif(tau_mean*100, 2)} ± {signif(tau_sd*100, 2)}"),
+    epsilon = glue("{signif(epsilon_mean, 5)} ± {signif(epsilon_sd, 5)}"),
+    lambda = glue("{signif(lambda_mean, 2)} ± {signif(lambda_sd, 2)}"),
+    theta_mean_rounded = if_else(theta_mean < 100, signif(theta_mean, 2), signif(theta_mean, 3)),
+    theta_sd_rounded = if_else(theta_sd < 100, signif(theta_sd, 2), signif(theta_sd, 3)),
+    theta = glue("{theta_mean_rounded} ± {theta_sd_rounded}")
+  ) %>%
+  select(!(contains("mean") | contains("sd"))) %T>%
+  print()
+# Species               Treatment     n alpha        mu        tau       epsilon       lambda       theta      
+# Ecklonia radiata      Live      80000 -1 ± 0.35    44 ± 38   3.8 ± 2.8 27064 ± 11636 0.44 ± 0.078 0.33 ± 0.21
+# Ecklonia radiata      Dead      80000 -11 ± 1.8    36 ± 16   2.7 ± 1.2 27042 ± 13569 4.7 ± 1.6    3.5 ± 1.8  
+# Amphibolis griffithii Live      80000 0.17 ± 0.1   120 ± 85  2.9 ± 1.8 27292 ± 14056 1.1 ± 1.6    267 ± 116  
+# Amphibolis griffithii Dead      80000 0.074 ± 0.14 105 ± 86  3 ± 1.9   28205 ± 13785 2.3 ± 1.7    174 ± 70   
+# Laminaria digitata    Live      80000 0.4 ± 0.19   114 ± 114 3.1 ± 2.1 27181 ± 13363 1.3 ± 0.76   22 ± 5.6   
+# Laminaria digitata    Dead      80000 -10 ± 1.1    47 ± 27   3 ± 1.5   29014 ± 15817 4.2 ± 3.2    5.3 ± 1.9 
+
+# Predict across predictor range
+fresh_prediction <- fresh_prior_posterior %>%
+  spread_continuous(data = deco_fresh %>%
+                      # Ensure predictor range starts at 0
+                      bind_rows(
+                        expand_grid(
+                          Day = 0, 
+                          Proportion = 1,
+                          Species = c("Laminaria digitata", "Ecklonia radiata", "Amphibolis griffithii"),
+                          Treatment = c("Live", "Dead")
+                        ) 
+                      ),
+                    group_name = "Species", # different species have different predictor ranges
+                    predictor_name = "Day", 
+                    length = 150) %>%
+  mutate(
+    p_mu = exp(
+      Day * alpha - ( alpha + tau ) * mu / 5 * (
+        log1p_exp( 5 / mu * ( Day - mu ) ) - log1p_exp( -5 )
+      )
+    ),
+    k = ( alpha + tau ) / ( 1 + exp( 5 / mu * ( Day - mu ) ) ) - tau,
+    nu = ( epsilon - theta ) * exp( -lambda * Day ) + theta,
+    p = rbetapr( n() , p_mu * ( 1 + nu ) , 2 + nu )
+  ) %>% # Summarise predictions
+  group_by(Day, Species, Treatment) %>%
+  median_qi(p_mu, k, nu, p, .width = c(.5, .8, .9)) %T>%
+  print()
+
+# Save progress and clean up
+fresh_prior_posterior %>%
+  write_rds(here("Decomposition", "RDS", "fresh_prior_posterior.rds"))
+fresh_prediction %>%
+  write_rds(here("Decomposition", "RDS", "fresh_prediction.rds"))
+
+rm(fresh_c_model, fresh_c_prior, fresh_c_samples,
+   fresh_nc_model, fresh_nc_prior, fresh_nc_samples)
+
+# 2.4 Fresh mass naive model ####
+# 2.4.1 Prior simulation ####
+# Same as 2.2.1
+
+# 2.4.2 Stan model ####
+fresh_k_c_model <- here("Decomposition", "Stan", "fresh_k_c.stan") %>% 
+  read_file() %>%
+  write_stan_file() %>%
+  cmdstan_model()
+
+fresh_k_nc_model <- here("Decomposition", "Stan", "fresh_k_nc.stan") %>% 
+  read_file() %>%
+  write_stan_file() %>%
+  cmdstan_model()
+
+fresh_k_c_samples <- fresh_k_c_model$sample(
+          data = deco_fresh %>%
+            select(Day, Proportion,
+                   Species, Treatment) %>%
+            compose_data(),
+          chains = 8,
+          parallel_chains = parallel::detectCores(),
+          iter_warmup = 1e4,
+          iter_sampling = 1e4
+        ) %T>%
+  print(max_rows = 200)
+
+fresh_k_nc_samples <- fresh_k_nc_model$sample(
+          data = deco_fresh %>%
+            select(Day, Proportion,
+                   Species, Treatment) %>%
+            compose_data(),
+          chains = 8,
+          parallel_chains = parallel::detectCores(),
+          iter_warmup = 1e4,
+          iter_sampling = 1e4
+        ) %T>%
+  print(max_rows = 200)
+
+# 2.4.3 Model checks ####
+# Rhat
+fresh_k_c_samples$summary() %>%
+  summarise(rhat_1.001 = mean( rhat > 1.001 ),
+            rhat_mean = mean(rhat),
+            rhat_sd = sd(rhat))
+# No rhat above 1.001. rhat = 1.00 ± 0.0000586.
+
+fresh_k_nc_samples$summary() %>%
+  summarise(rhat_1.001 = mean( rhat > 1.001 ),
+            rhat_mean = mean(rhat),
+            rhat_sd = sd(rhat))
+# No rhat above 1.001. rhat = 1.00 ± 0.0000663.
+
+# Chains
+fresh_k_c_samples$draws(format = "df") %>%
+  mcmc_rank_overlay()
+
+fresh_k_nc_samples$draws(format = "df") %>%
+  mcmc_rank_overlay()
+# No difference in chains
+
+# Pairs
+fresh_k_c_samples$draws(format = "df") %>%
+  mcmc_pairs(pars = c("log_k[1,1]", "log_sigma[1,1]"))
+fresh_k_c_samples$draws(format = "df") %>%
+  mcmc_pairs(pars = c("log_k[1,2]", "log_sigma[1,2]"))
+
+fresh_k_c_samples$draws(format = "df") %>%
+  mcmc_pairs(pars = c("log_k[2,1]", "log_sigma[2,1]"))
+fresh_k_c_samples$draws(format = "df") %>%
+  mcmc_pairs(pars = c("log_k[2,2]", "log_sigma[2,2]"))
+
+fresh_k_nc_samples$draws(format = "df") %>%
+  mcmc_pairs(pars = c("log_k[1,1]", "log_sigma[1,1]"))
+fresh_k_nc_samples$draws(format = "df") %>%
+  mcmc_pairs(pars = c("log_k[1,2]", "log_sigma[1,2]"))
+
+fresh_k_nc_samples$draws(format = "df") %>%
+  mcmc_pairs(pars = c("log_k[2,1]", "log_sigma[2,1]"))
+fresh_k_nc_samples$draws(format = "df") %>%
+  mcmc_pairs(pars = c("log_k[2,2]", "log_sigma[2,2]"))
+# Correlations are absent for both models
+
+# 2.4.4 Prior-posterior comparison ####
+fresh_k_c_prior <- prior_samples(
+  model = fresh_k_c_model,
+  data = deco_fresh %>%
+    select(Day, Proportion,
+           Species, Treatment) %>%
+    compose_data()
+  )
+# Too many divergences, cannot effectively sample centred hierarchical priors
+
+fresh_k_nc_prior <- prior_samples(
+  model = fresh_k_nc_model,
+  data = deco_fresh %>%
+    select(Day, Proportion,
+           Species, Treatment) %>%
+    compose_data()
+  )
+# Works smoothly -> use only non-centred priors, because they are the same
+
+fresh_k_nc_prior %>% 
+  prior_posterior_draws(
+    posterior_samples = fresh_k_c_samples,
+    group = deco_fresh %>%
+      select(Species, Treatment),
+    parameters = c("log_k_mu", "log_k_sigma",
+                   "log_k[Species, Treatment]", 
+                   "log_sigma_mu", "log_sigma_sigma",
+                   "log_sigma[Species, Treatment]"),
+    format = "long"
+    ) %>%
+  prior_posterior_plot(
+    group_name = "Species", 
+    second_group_name = "Treatment"
+  )
+
+fresh_k_nc_prior %>% 
+  prior_posterior_draws(
+    posterior_samples = fresh_k_nc_samples,
+    group = deco_fresh %>%
+      select(Species, Treatment),
+    parameters = c("log_k_mu", "log_k_sigma",
+                   "log_k[Species, Treatment]", 
+                   "log_sigma_mu", "log_sigma_sigma",
+                   "log_sigma[Species, Treatment]"),
+    format = "long"
+    ) %>%
+  prior_posterior_plot(
+    group_name = "Species", 
+    second_group_name = "Treatment"
+  )
+# Posteriors look similarly smooth
+# Proceed with the centred model
+
+# 2.4.5 Prediction ####
+# Global parameters
+fresh_k_prior_posterior_global <- fresh_k_nc_prior %>% 
+  prior_posterior_draws(
+    posterior_samples = fresh_k_c_samples,
+    parameters = c("log_k_mu", "log_k_sigma",
+                   "log_sigma_mu", "log_sigma_sigma"),
+    format = "short"
+  ) %>%
+  mutate( # Calculate parameters for unobserved species/treatments
+    k = rnorm( n() , log_k_mu , log_k_sigma ) %>% exp(),
+    sigma = rnorm( n() , log_sigma_mu , log_sigma_sigma ) %>% exp()
+  ) %>%
+  select(starts_with("."), distribution, k, sigma) %T>%
+  print()
+
+fresh_k_prior_posterior_global %>%
+  pivot_longer(cols = -c(starts_with("."), distribution),
+               names_to = "parameter") %>%
+  group_by(distribution, parameter) %>%
+  summarise(mean = mean(value), sd = sd(value), n = n())
+
+# Species/treatment parameters
+fresh_k_prior_posterior <- fresh_k_nc_prior %>% 
+  prior_posterior_draws(
+    posterior_samples = fresh_k_c_samples,
+    group = deco_fresh %>%
+      select(Species, Treatment),
+    parameters = c("log_k[Species, Treatment]", 
+                   "log_sigma[Species, Treatment]"),
+    format = "short"
+  ) %>% 
+  mutate(across( # Exponentiate all logged parameters
+    starts_with("log"), ~ exp(.x), .names = "{sub('^log_', '', .col)}"
+  )) %>% # Remove redundant priors within species
+  filter(!(Treatment == "Dead" & distribution == "prior")) %>%
+  mutate( # Embed prior in treatment
+    Treatment = if_else(
+      distribution == "prior", "Prior", Treatment
+    ) %>% fct()
+  ) %>%
+  select(starts_with("."), Species, Treatment, k, sigma) %T>%
+  print()
+
+fresh_k_prior_posterior %>%
+  pivot_longer(cols = -c(starts_with("."), Species, Treatment),
+               names_to = "parameter") %>%
+  group_by(Species, Treatment, parameter) %>%
+  summarise(mean = mean(value), sd = sd(value), n = n()) %>%
+  print(n = 18)
+
+# Calculate rounded values for main table
+fresh_k_parameters <- fresh_k_prior_posterior %>%
+  select(!starts_with(".")) %>%
+  filter(Treatment != "Prior") %>%
+  group_by(Species, Treatment) %>%
+  summarise(
+    across( everything(), list(mean = mean, sd = sd) ),
+    n = n()
+  ) %>%
+  ungroup() %>%
+  mutate( # Note I am converting dimensionless rates to %
+    k = glue("{signif(k_mean*100, 2)} ± {signif(k_sd*100, 2)}"),
+    sigma = glue("{signif(sigma_mean, 2)} ± {signif(sigma_sd, 2)}")
+  ) %>%
+  select(!(contains("mean") | contains("sd"))) %T>%
+  print()
+# Species               Treatment     n k             sigma       
+# Ecklonia radiata      Live      80000 1.4 ± 0.29    0.31 ± 0.042
+# Ecklonia radiata      Dead      80000 6.5 ± 1.1     0.21 ± 0.028
+# Amphibolis griffithii Live      80000 0.05 ± 0.039  0.11 ± 0.026
+# Amphibolis griffithii Dead      80000 0.12 ± 0.064  0.12 ± 0.025
+# Laminaria digitata    Live      80000 0.053 ± 0.043 0.23 ± 0.025
+# Laminaria digitata    Dead      80000 7.7 ± 0.78    0.17 ± 0.018
+
+# Calculate contrasts
+fresh_contrast <- fresh_k_prior_posterior %>%
+  filter(Treatment != "Prior") %>%
+  select(-sigma) %>%
+  pivot_wider(names_from = Treatment, values_from = k) %>%
+  mutate(difference = Dead - Live,
+         ratio = Dead / Live,
+         log_ratio = log10(ratio)) %T>%
+  print()
+
+# Summarise contrasts for main table
+fresh_contrast_summary <- fresh_contrast %>%
+  select(!starts_with(".")) %>%
+  group_by(Species) %>%
+  summarise(
+    across( everything(), list(mean = mean, sd = sd) ),
+    n = n(),
+    P = mean( difference > 0 ) %>% signif(2)
+  ) %>%
+  ungroup() %>%
+  mutate( # Note I am converting dimensionless rates to %
+    Live = glue("{signif(Live_mean*100, 2)} ± {signif(Live_sd*100, 2)}"),
+    Dead = glue("{signif(Dead_mean*100, 2)} ± {signif(Dead_sd*100, 2)}"),
+    difference = glue("{signif(difference_mean*100, 2)} ± {signif(difference_sd*100, 2)}"),
+    ratio = glue("{signif(ratio_mean, 2)} ± {signif(ratio_sd, 2)}"),
+    log_ratio = glue("{signif(log_ratio_mean, 2)} ± {signif(log_ratio_sd, 2)}")
+  ) %>%
+  select(!(contains("mean") | contains("sd"))) %T>%
+  print()
+# Species                   n     P Live          Dead         difference   ratio      log_ratio  
+# Ecklonia radiata      80000  1    1.4 ± 0.29    6.5 ± 1.1    5.1 ± 1.1    5 ± 1.4    0.68 ± 0.12
+# Amphibolis griffithii 80000  0.85 0.05 ± 0.039  0.12 ± 0.064 0.07 ± 0.073 6 ± 43     0.44 ± 0.48
+# Laminaria digitata    80000  1    0.053 ± 0.043 7.7 ± 0.78   7.7 ± 0.78   430 ± 2900 2.3 ± 0.42 
+
+# Predict across predictor range
+fresh_k_prediction <- fresh_k_prior_posterior %>%
+  spread_continuous(data = deco_fresh %>%
+                      # Ensure predictor range starts at 0
+                      bind_rows(
+                        expand_grid(
+                          Day = 0, 
+                          Proportion_mean = 1,
+                          Species = c("Ecklonia radiata", "Amphibolis griffithii"),
+                          Treatment = c("Live", "Dead")
+                        ) 
+                      ), 
+                    # all groups have the same predictor range
+                    predictor_name = "Day") %>%
+  mutate(
+    p_mu = exp( -k * Day ),
+    p = rnorm( n() , p_mu , sigma )
+  ) %>% # Summarise predictions
+  group_by(Day, Species, Treatment) %>%
+  median_qi(p_mu, p, .width = c(.5, .8, .9)) %T>%
+  print()
+
+# Save progress and clean up
+fresh_k_prior_posterior %>%
+  write_rds(here("Decomposition", "RDS", "fresh_k_prior_posterior.rds"))
+fresh_contrast %>%
+  write_rds(here("Decomposition", "RDS", "fresh_contrast.rds"))
+fresh_k_prediction %>%
+  write_rds(here("Decomposition", "RDS", "fresh_k_prediction.rds"))
+
+rm(fresh_k_c_model, fresh_k_c_prior, fresh_k_c_samples,
+   fresh_k_nc_model, fresh_k_nc_prior, fresh_k_nc_samples)
+
+# 3. Figures ####
+# 3.1 Combine predictions ####
+prediction <- dry_prediction %>%
+  mutate(Mass = "Dry" %>% fct()) %>%
+  bind_rows(fresh_prediction %>%
+              mutate(Mass = "Fresh" %>% fct())) %>%
+  mutate(Species = Species %>% 
+           fct_relevel("Laminaria digitata", "Ecklonia radiata")) %T>%
+  print()
+
+contrast <- dry_contrast %>%
+  mutate(Mass = "Dry" %>% fct()) %>%
+  bind_rows(fresh_contrast %>%
+              mutate(Mass = "Fresh" %>% fct())) %>%
+  mutate(Species = Species %>% 
+           fct_relevel("Laminaria digitata", "Ecklonia radiata")) %T>%
+  print()
+
+k <- dry_k_prior_posterior %>%
+  mutate(Mass = "Dry" %>% fct()) %>%
+  bind_rows(fresh_k_prior_posterior %>%
+              mutate(Mass = "Fresh" %>% fct())) %>%
+  mutate(Species = Species %>% 
+           fct_relevel("Laminaria digitata", "Ecklonia radiata"),
+         Treatment = Treatment %>% fct_relevel("Dead")) %T>%
+  print()
+
+# 3.2 Combine data ####
+deco <- deco_dry_summary %>%
+  mutate(Mass = "Dry" %>% fct()) %>%
+  bind_rows(deco_fresh %>%
+              mutate(Mass = "Fresh" %>% fct()) %>%
+              rename(Proportion_mean = Proportion)) %>%
+  mutate(Species = Species %>% 
+           fct_relevel("Laminaria digitata", "Ecklonia radiata")) %T>%
+  print()
+
+# 3.3 Figure 2 ####
+# 3.3.1 Figure 2a ####
+Fig_2a <- prediction %>%
+  filter(
+    Treatment != "Prior" & 
+      !(Species %in% c("Ecklonia radiata", "Amphibolis griffithii") & Mass == "Fresh")
+  ) %>%
   ggplot() +
     geom_hline(yintercept = c(0, 1)) +
-    geom_line(aes(Days, p, colour = Species)) +
-    geom_ribbon(aes(Days, ymin = p.lower, ymax = p.upper,
-                    alpha = factor(.width), fill = Species)) +
-    geom_pointrange(data = deco_dry_summary,
-                    aes(Days, Proportion_mean,
+    geom_pointrange(data = deco %>%
+                      filter(!(Species %in% c("Ecklonia radiata", "Amphibolis griffithii") &
+                                 Mass == "Fresh")),
+                    aes(Day, Proportion_mean,
                         ymin = Proportion_lwr,
                         ymax = Proportion_upr,
                         colour = Species),
-                    shape = 16, alpha = 0.5) +
-    # geom_point(data = deco_dry_summary,
-    #            aes(Days, Proportion_mean, colour = Species),
-    #            shape = 16, alpha = 0.5) +
-    scale_fill_manual(values = c("#c3b300", "#4a7518"), guide = "none") +
-    scale_colour_manual(values = c("#c3b300", "#4a7518"), guide = "none") +
+                    shape = 16, alpha = 0.5, size = 0.5) +
+    geom_line(aes(Day, p_mu, colour = Species)) +
+    geom_ribbon(data = . %>% filter(.width == 0.9),
+                aes(Day, ymin = p.lower, ymax = p.upper,
+                    fill = Species), alpha = 0.3) +
+    geom_ribbon(aes(Day, ymin = p_mu.lower, ymax = p_mu.upper,
+                    alpha = factor(.width), fill = Species)) +
+    scale_fill_manual(values = c("#333b08", "#c3b300", "#4a7518"), guide = "none") +
+    scale_colour_manual(values = c("#333b08", "#c3b300", "#4a7518"), guide = "none") +
     scale_alpha_manual(values = c(0.5, 0.4, 0.3), guide = "none") +
     scale_y_continuous(breaks = seq(0, 1.8, 0.6),
                        labels = scales::label_number(accuracy = c(1, rep(0.1, 3)))) +
     labs(x = "Detrital age (days)",
-         y = "Remaining proportion of mass") +
+         y = expression("Relative detrital mass ("*italic(m)*"/"*italic(m)[0]*")")) +
     coord_cartesian(xlim = c(0, 80), ylim = c(0, 1.8),
                     expand = F, clip = "off") +
     facet_grid2(Treatment ~ Species,
@@ -729,26 +1715,362 @@ Fig_1a <- dry_prediction %>%
     theme(strip.text.x = element_text(face = "italic", hjust = 0),
           plot.margin = margin(0, 0.5, 0, 0.2, unit = "cm"))
 
+Fig_2a
+# Safely ignore warning, which is due to Laminaria digitata not having a standard 
+# deviation for geom_pointrange.
 
+# 3.3.2 Figure 2b ####
+k %>%
+  filter(
+    Treatment != "Prior" & 
+      !(Species %in% c("Ecklonia radiata", "Amphibolis griffithii") & Mass == "Fresh")
+  ) %>%
+  group_by(Species, Treatment) %>%
+  summarise(mean = mean(k), max = qi(k, 0.99)[2])
 
-Fig_1a %>%
-  ggsave(filename = "Fig_1a.pdf", path = "Figures",
-         device = cairo_pdf, height = 10, width = 20, units = "cm")
+require(ggridges)
+Fig_2b <- k %>%
+  filter(
+    Treatment != "Prior" & 
+      !(Species %in% c("Ecklonia radiata", "Amphibolis griffithii") & Mass == "Fresh")
+  ) %>%
+  ggplot() +
+    stat_density_ridges(aes(k, y = Treatment, fill = Species), 
+                        colour = NA, n = 2^10, from = rep(0, 3), to = c(0.12, 0.18, 0.03), 
+                        scale = 2, bandwidth = c(0.12*0.02, 0.18*0.02, 0.03*0.02)) +
+    geom_text(
+      data = tibble(
+        Species = k %$% levels(Species) %>% rep(each = 2) %>% fct(),
+        Treatment = c("Live", "Dead") %>% rep(3) %>% fct(),
+        label = c("Live", "Dead", NA %>% rep(4))
+      ),
+      aes(x = -0.0313 %>% rep(6), y = Treatment, label = label),
+      family = "Futura", size = 12, size.unit = "pt",
+      hjust = 0, vjust = 0
+    ) +
+    scale_fill_manual(values = c("#333b08", "#c3b300", "#4a7518"), guide = "none") +
+    facet_grid(~ Species, scales = "free") +
+    facetted_pos_scales(
+      x = list(
+        Species == "Laminaria digitata" ~ 
+          scale_x_continuous(limits = c(0, 0.12), 
+                             breaks = seq(0, 0.12, by = 0.04),
+                             labels = scales::label_number(accuracy = c(1, 0.01 %>% rep(3))),
+                             oob = scales::oob_keep),
+        Species == "Ecklonia radiata" ~ 
+          scale_x_continuous(limits = c(0, 0.18), 
+                             breaks = seq(0, 0.18, by = 0.06),
+                             labels = scales::label_number(accuracy = c(1, 0.01 %>% rep(3))),
+                             oob = scales::oob_keep),
+        Species == "Amphibolis griffithii" ~ 
+          scale_x_continuous(limits = c(0, 0.03),
+                             breaks = seq(0, 0.03, by = 0.01),
+                             labels = scales::label_number(accuracy = c(1, 0.01 %>% rep(3))),
+                             oob = scales::oob_keep)
+        )
+      ) +
+    labs(x = expression("Exponential decay ("*italic(k)*", day"^-1*")")) +
+    coord_cartesian(expand = F, clip = "off") +
+    mytheme +
+    theme(axis.title.y = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.line.y = element_blank(),
+          strip.text = element_blank())
 
+Fig_2b
+# Safely ignore warning, which is due to intentional NAs in geom_text.
 
+# 3.3.3 Figure 2c ####
+contrast %>%
+  filter(!(Species %in% c("Ecklonia radiata", "Amphibolis griffithii") & 
+             Mass == "Fresh")) %>%
+  group_by(Species) %>%
+  summarise(min = qi(log_ratio, 0.99)[1], 
+            mean = mean(log_ratio), 
+            max = qi(log_ratio, 0.99)[2])
 
-# 2.2 Wet proportion ####
-# 2.2.1 Visualisation ####
+Fig_2c <- contrast %>%
+  filter(!(Species %in% c("Ecklonia radiata", "Amphibolis griffithii") & 
+             Mass == "Fresh")) %>%
+  ggplot() +
+    stat_density_ridges(aes(log_ratio, y = 0, fill = Species),
+                        colour = NA, from = c(1, 0.4, 0), to = c(5, 1.2, 0.4),
+                        bandwidth = c(4*0.02, 0.8*0.02, 0.4*0.02)) +
+    scale_fill_manual(values = c("#333b08", "#c3b300", "#4a7518"), guide = "none") +
+    facet_wrap(~ Species, scales = "free") + # I am wrapping here so that densities are the same height
+    facetted_pos_scales(
+      x = list(
+        Species == "Laminaria digitata" ~ 
+          scale_x_continuous(limits = c(1, 5), 
+                             breaks = seq(1, 5, by = 1),
+                             oob = scales::oob_keep),
+        Species == "Ecklonia radiata" ~ 
+          scale_x_continuous(limits = c(0.4, 1.2), 
+                             breaks = seq(0.4, 1.2, by = 0.2),
+                             labels = scales::label_number(accuracy = c(0.1 %>% rep(3), 1, 0.1)),
+                             oob = scales::oob_keep),
+        Species == "Amphibolis griffithii" ~ 
+          scale_x_continuous(limits = c(0, 0.4),
+                             breaks = seq(0, 0.4, by = 0.1),
+                             labels = scales::label_number(accuracy = c(1, 0.1 %>% rep(4))),
+                             oob = scales::oob_keep)
+        )
+      ) +
+    labs(x = expression("Relative exponential decay (log"[10]*" "*italic(k)["Dead"]*"/"*italic(k)["Live"]*")")) +
+    coord_cartesian(expand = F, clip = "off") +
+    mytheme +
+    theme(axis.title.y = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.line.y = element_blank(),
+          strip.text = element_blank())
 
-ggplot() +
-  geom_point(data = deco_wet,
-             aes(Days, Proportion)) +
-  facet_grid(Treatment ~ Species) +
-  theme_minimal()
+Fig_2c
 
-# 3. Visualisation ####
+# 3.3.4 Combine panels ####
+require(patchwork)
+Fig_2 <- ( Fig_2a / Fig_2b / Fig_2c ) +
+  plot_layout(heights = c(1, 0.3, 0.06))
 
+Fig_2 %>%
+  ggsave(filename = "Fig_2.pdf", path = "Figures",
+         device = cairo_pdf, height = 15, width = 20, units = "cm")
 
-# 4. Naive models ####
+# 3.4 Figure S3 ####
+# 3.4.1 Figure S3a ####
+Fig_S3a <- prediction %>%
+  filter(Treatment != "Prior" & Mass == "Fresh") %>%
+  ggplot() +
+    geom_hline(yintercept = c(0, 1)) +
+    geom_point(data = deco %>% filter(Mass == "Fresh"),
+               aes(Day, Proportion_mean, colour = Species),
+               shape = 16, alpha = 0.5, size = 2.4) +
+    geom_line(aes(Day, p_mu, colour = Species)) +
+    geom_ribbon(data = . %>% filter(.width == 0.9),
+                aes(Day, ymin = p.lower, ymax = p.upper,
+                    fill = Species), alpha = 0.3) +
+    geom_ribbon(aes(Day, ymin = p_mu.lower, ymax = p_mu.upper,
+                    alpha = factor(.width), fill = Species)) +
+    scale_fill_manual(values = c("#333b08", "#c3b300", "#4a7518"), guide = "none") +
+    scale_colour_manual(values = c("#333b08", "#c3b300", "#4a7518"), guide = "none") +
+    scale_alpha_manual(values = c(0.5, 0.4, 0.3), guide = "none") +
+    scale_y_continuous(breaks = seq(0, 1.8, 0.6),
+                       labels = scales::label_number(accuracy = c(1, rep(0.1, 3)))) +
+    labs(x = "Detrital age (days)",
+         y = expression("Relative detrital mass ("*italic(m)*"/"*italic(m)[0]*")")) +
+    coord_cartesian(xlim = c(0, 80), ylim = c(0, 1.8),
+                    expand = F, clip = "off") +
+    facet_grid2(Treatment ~ Species,
+                switch = "y",
+                strip = strip_nested(text_y = element_text(angle = 0, hjust = 0, vjust = 1))) +
+    mytheme +
+    theme(strip.text.x = element_text(face = "italic", hjust = 0),
+          plot.margin = margin(0, 0.5, 0, 0.2, unit = "cm"))
 
+Fig_S3a
 
+# 3.4.2 Figure S3b ####
+k %>%
+  filter(Treatment != "Prior" & Mass == "Fresh") %>%
+  group_by(Species, Treatment) %>%
+  summarise(mean = mean(k), max = qi(k, 0.99)[2])
+
+Fig_S3b <- k %>%
+  filter(Treatment != "Prior" & Mass == "Fresh") %>%
+  ggplot() +
+    stat_density_ridges(aes(k, y = Treatment, fill = Species), 
+                        colour = NA, n = 2^10, from = rep(0, 3), to = c(0.12, 0.12, 0.004), 
+                        scale = 2, bandwidth = c(0.12*0.02, 0.12*0.02, 0.004*0.02)) +
+    geom_text(
+      data = tibble(
+        Species = k %$% levels(Species) %>% rep(each = 2) %>% fct(),
+        Treatment = c("Live", "Dead") %>% rep(3) %>% fct(),
+        label = c("Live", "Dead", NA %>% rep(4))
+      ),
+      aes(x = -0.0313 %>% rep(6), y = Treatment, label = label),
+      family = "Futura", size = 12, size.unit = "pt",
+      hjust = 0, vjust = 0
+    ) +
+    scale_fill_manual(values = c("#333b08", "#c3b300", "#4a7518"), guide = "none") +
+    facet_grid(~ Species, scales = "free") +
+    facetted_pos_scales(
+      x = list(
+        Species == "Laminaria digitata" ~ 
+          scale_x_continuous(limits = c(0, 0.12), 
+                             breaks = seq(0, 0.12, by = 0.04),
+                             labels = scales::label_number(accuracy = c(1, 0.01 %>% rep(3))),
+                             oob = scales::oob_keep),
+        Species == "Ecklonia radiata" ~ 
+          scale_x_continuous(limits = c(0, 0.12), 
+                             breaks = seq(0, 0.12, by = 0.04),
+                             labels = scales::label_number(accuracy = c(1, 0.01 %>% rep(3))),
+                             oob = scales::oob_keep),
+        Species == "Amphibolis griffithii" ~ 
+          scale_x_continuous(limits = c(0, 0.004),
+                             breaks = seq(0, 0.004, by = 0.002),
+                             labels = scales::label_number(accuracy = c(1, 0.001 %>% rep(2))),
+                             oob = scales::oob_keep)
+        )
+      ) +
+    labs(x = expression("Exponential decay ("*italic(k)*", day"^-1*")")) +
+    coord_cartesian(expand = F, clip = "off") +
+    mytheme +
+    theme(axis.title.y = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.line.y = element_blank(),
+          strip.text = element_blank())
+
+Fig_S3b
+# Safely ignore warning, which is due to intentional NAs in geom_text.
+
+# 3.4.3 Figure S3c ####
+contrast %>%
+  filter(Mass == "Fresh") %>%
+  group_by(Species) %>%
+  summarise(min = qi(log_ratio, 0.99)[1], 
+            mean = mean(log_ratio), 
+            max = qi(log_ratio, 0.99)[2])
+
+Fig_S3c <- contrast %>%
+  filter(Mass == "Fresh") %>%
+  ggplot() +
+    stat_density_ridges(aes(log_ratio, y = 0, fill = Species),
+                        colour = NA, from = c(1, 0.3, -1), to = c(5, 1.1, 2),
+                        bandwidth = c(4*0.02, 0.8*0.02, 3*0.02)) +
+    geom_vline(
+      data = tibble(
+        Species = contrast %$% levels(Species) %>% fct(),
+        x = c(NA, NA, 0)
+      ),
+      aes(xintercept = x)
+    ) +
+    scale_fill_manual(values = c("#333b08", "#c3b300", "#4a7518"), guide = "none") +
+    facet_wrap(~ Species, scales = "free") + # I am wrapping here so that densities are the same height
+    facetted_pos_scales(
+      x = list(
+        Species == "Laminaria digitata" ~ 
+          scale_x_continuous(limits = c(1, 5), 
+                             breaks = seq(1, 5, by = 1),
+                             oob = scales::oob_keep),
+        Species == "Ecklonia radiata" ~ 
+          scale_x_continuous(limits = c(0.3, 1.1), 
+                             breaks = seq(0.3, 1.1, by = 0.2),
+                             oob = scales::oob_keep),
+        Species == "Amphibolis griffithii" ~ 
+          scale_x_continuous(limits = c(-1, 2),
+                             breaks = seq(-1, 2, by = 1),
+                             labels = scales::label_number(style_negative = "minus"),
+                             oob = scales::oob_keep)
+        )
+      ) +
+    labs(x = expression("Relative exponential decay (log"[10]*" "*italic(k)["Dead"]*"/"*italic(k)["Live"]*")")) +
+    coord_cartesian(expand = F, clip = "off") +
+    mytheme +
+    theme(axis.title.y = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.line.y = element_blank(),
+          strip.text = element_blank())
+
+Fig_S3c
+
+# 3.4.4 Combine panels ####
+Fig_S3 <- ( Fig_S3a / Fig_S3b / Fig_S3c ) +
+  plot_layout(heights = c(1, 0.3, 0.06))
+
+Fig_S3 %>%
+  ggsave(filename = "Fig_S3.pdf", path = "Figures",
+         device = cairo_pdf, height = 15, width = 20, units = "cm")
+
+# 4. Tables ####
+# 4.1 Combine estimates ####
+k_parameters <- dry_k_parameters %>%
+  mutate(Mass = "Dry" %>% fct()) %>%
+  bind_rows(fresh_k_parameters %>%
+              mutate(Mass = "Fresh" %>% fct())) %>%
+  mutate(Species = Species %>% 
+           fct_relevel("Laminaria digitata", "Ecklonia radiata")) %T>%
+  print()
+  
+parameters <- dry_parameters %>%
+  mutate(Mass = "Dry" %>% fct()) %>%
+  bind_rows(fresh_parameters %>%
+              mutate(Mass = "Fresh" %>% fct())) %>%
+  mutate(Species = Species %>% 
+           fct_relevel("Laminaria digitata", "Ecklonia radiata")) %T>%
+  print()
+
+contrast_summary <- dry_contrast_summary %>%
+  mutate(Mass = "Dry" %>% fct()) %>%
+  bind_rows(fresh_contrast_summary %>%
+              mutate(Mass = "Fresh" %>% fct())) %>%
+  mutate(Species = Species %>% 
+           fct_relevel("Laminaria digitata", "Ecklonia radiata")) %T>%
+  print()
+  
+# 4.2 Table 1 ####
+Table_1.1 <- contrast_summary %>%
+  filter(!(Species %in% c("Ecklonia radiata", "Amphibolis griffithii") & 
+             Mass == "Fresh")) %>%
+  select(Species, Live, Dead, difference, log_ratio, P) %>%
+  arrange(Species) %T>%
+  print()
+
+Table_1.1 %>%
+  write_csv(here("Tables", "Table_1.1.csv"))
+
+require(officer)
+read_docx() %>%
+  body_add_table(value = Table_1.1) %>%
+  print(target = here("Tables", "Table_1.1.docx"))
+
+# 4.3 Table S2 ####
+Table_S2.1 <- k_parameters %>% 
+  select(Species, Mass, Treatment, k, sigma) %>%
+  left_join(
+    parameters %>% 
+      select(Species, Mass, Treatment, alpha, mu, tau, epsilon, lambda, theta),
+    by = c("Species", "Mass", "Treatment")
+  ) %>%
+  arrange(Species) %T>%
+  print()
+
+Table_S2.1 %>%
+  write_csv(here("Tables", "Table_S2.1.csv"))
+
+read_docx() %>%
+  body_add_table(value = Table_S2.1) %>%
+  print(target = here("Tables", "Table_S2.1.docx"))
+
+Table_S2.1_reduced <- k_parameters %>% 
+  select(Species, Mass, Treatment, k) %>%
+  left_join(
+    parameters %>% 
+      select(Species, Mass, Treatment, alpha, mu, tau),
+    by = c("Species", "Mass", "Treatment")
+  ) %>%
+  arrange(Species) %T>%
+  print()
+
+Table_S2.1_reduced %>%
+  write_csv(here("Tables", "Table_S2.1_reduced.csv"))
+
+read_docx() %>%
+  body_add_table(value = Table_S2.1_reduced) %>%
+  print(target = here("Tables", "Table_S2.1_reduced.docx"))
+
+# 4.4 Table S3 ####
+Table_S3 <- contrast_summary %>%
+  filter(Mass == "Fresh") %>%
+  select(Species, Live, Dead, difference, log_ratio, P) %>%
+  arrange(Species) %T>%
+  print()
+
+Table_S3 %>%
+  write_csv(here("Tables", "Table_S3.csv"))
+
+read_docx() %>%
+  body_add_table(value = Table_S3) %>%
+  print(target = here("Tables", "Table_S3.docx"))

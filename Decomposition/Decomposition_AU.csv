@@ -1,9 +1,9 @@
 ﻿ID,Species,Treatment,Tank,Deployment,Initial,Retrieval,Final,Dry,Initials,Notes
 1,Ecklonia radiata,Live,3,03.02.25,15.79,24.03.25,5.6,1.46755,PA,
 2,Ecklonia radiata,Live,3,03.02.25,17.35,10.04.25,6.46,1.17992,PA,
-3,Ecklonia radiata,Live,3,03.02.25,42.74,13.02.25,38.7,10.75787,"PA, TR",
+3,Ecklonia radiata,Live,3,03.02.25,42.74,13.02.25,38.7,10.75787,"PA, TR",dry mass double-checked by LSW: 10.80306 g
 4,Ecklonia radiata,Live,3,03.02.25,43.86,17.04.25,0,0,PA,
-5,Ecklonia radiata,Live,1,03.02.25,9.82,05.02.25,9.6,1.78692,LSW,
+5,Ecklonia radiata,Live,1,03.02.25,9.82,05.02.25,9.6,1.78692,LSW,dry mass double-checked by LSW: 1.77419 g
 6,Ecklonia radiata,Live,3,03.02.25,22.63,27.02.25,7.85,2.10818,TR,
 7,Ecklonia radiata,Dead,3,03.02.25,12.14,06.03.25,0,0,LSW,
 8,Ecklonia radiata,Live,3,03.02.25,27.5,03.03.25,19.78,4.5246,PA,
@@ -11,12 +11,12 @@
 10,Ecklonia radiata,Dead,1,03.02.25,14.12,04.02.25,10.8,2.14927,LSW,
 11,Ecklonia radiata,Dead,3,03.02.25,8.16,07.02.25,10.01,1.14335,LSW,
 12,Ecklonia radiata,Live,3,03.02.25,37.62,10.03.25,9.33,1.65212,PA,
-13,Ecklonia radiata,Live,1,03.02.25,34.57,10.02.25,30.43,7.78779,TR,
+13,Ecklonia radiata,Live,1,03.02.25,34.57,10.02.25,30.43,7.78779,TR,dry mass double-checked by LSW: 7.74139 g
 14,Ecklonia radiata,Live,1,03.02.25,22.22,10.03.25,9.21,2.36284,PA,
 15,Ecklonia radiata,Live,1,03.02.25,23.65,03.03.25,18.35,4.33384,PA,
-16,Ecklonia radiata,Live,3,03.02.25,18.46,17.02.25,17.94,5.1116,PA,
+16,Ecklonia radiata,Live,3,03.02.25,18.46,17.02.25,17.94,5.1116,PA,dry mass double-checked by LSW: 5.10902 g
 17,Ecklonia radiata,Dead,3,03.02.25,25.14,17.03.25,0,0,PA,
-18,Ecklonia radiata,Live,3,03.02.25,8.26,07.02.25,8.21,1.80704,LSW,
+18,Ecklonia radiata,Live,3,03.02.25,8.26,07.02.25,8.21,1.80704,LSW,dry mass double-checked by LSW: 1.79897 g
 19,Ecklonia radiata,Live,1,03.02.25,7.26,07.04.25,6.73,1.47317,PA,
 20,Ecklonia radiata,Live,1,03.02.25,15.57,17.02.25,16.1,3.89216,PA,
 21,Ecklonia radiata,Dead,3,03.02.25,14.39,10.03.25,0,0,PA,
@@ -44,13 +44,13 @@
 43,Ecklonia radiata,Dead,1,03.02.25,28.04,05.02.25,25.61,4.59609,LSW,
 44,Ecklonia radiata,Dead,1,03.02.25,38.41,27.03.25,0,0,PA,
 45,Ecklonia radiata,Dead,3,03.02.25,29.68,31.03.25,0,0,PA,
-46,Ecklonia radiata,Dead,1,03.02.25,19.06,10.02.25,26.92,3.6159,"TR, PA",was 8.4821 g without sand removed
+46,Ecklonia radiata,Dead,1,03.02.25,19.06,10.02.25,26.92,3.6159,"TR, PA",dry mass was 8.4821 g without sand removed
 47,Ecklonia radiata,Dead,1,03.02.25,13.11,10.03.25,0,0,PA,
 48,Ecklonia radiata,Dead,1,03.02.25,39.33,24.03.25,0,0,PA,
 49,Ecklonia radiata,Live,1,03.02.25,10.37,24.02.25,16.7,3.11158,PA,
 50,Ecklonia radiata,Dead,1,03.02.25,11.11,07.04.25,0,0,PA,
 51,Ecklonia radiata,Dead,3,03.02.25,42.66,17.04.25,0,0,PA,
-52,Ecklonia radiata,Dead,3,03.02.25,38.68,13.02.25,27.58,6.6174,"TR, PA",was 10.53261 g without sand removed
+52,Ecklonia radiata,Dead,3,03.02.25,38.68,13.02.25,27.58,6.6174,"TR, PA",dry mass was 10.53261 g without sand removed
 53,Ecklonia radiata,Dead,1,03.02.25,22.31,24.02.25,11.22,0.33815,PA,
 54,Ecklonia radiata,Live,3,03.02.25,13.57,13.03.25,0,0,LSW,
 55,Amphibolis griffithii,Dead,2,03.02.25,7.33,20.03.25,8.31,0.98941,PA,

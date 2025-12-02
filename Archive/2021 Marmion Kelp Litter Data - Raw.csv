@@ -1,0 +1,191 @@
+Sample_ID,Bag_no,Sample_no_wt,Sample_no_chem,species,site,depth,time,time_int,ww,dw,rb,d15N,d13C,N,C,C.N,notes,prep_notes
+SM5_T0_1E,1,1,1,Ecklonia radiata,SM5,10,0,T0,20,4.214,0.92,3.19,-17.00,0.24,33.29,138.04,,
+SM5_T0_2E,1,2,2,Ecklonia radiata,SM5,10,0,T0,20,4.469,0.98,3.29,-17.30,0.51,31.91,62.73,,
+SM5_T0_3E,1,3,3,Ecklonia radiata,SM5,10,0,T0,20,4.989,1.09,4.05,-17.90,0.57,32.13,56.01,,
+SM5_T0_1S,1,4,4,Scytothalia dorycarpa,SM5,10,0,T0,20,5.5127,1.02,2.58,-19.10,0.06,30.78,491.19,,
+SM5_T0_2S,1,5,5,Scytothalia dorycarpa,SM5,10,0,T0,20,6.2336,1.15,3.04,-19.37,0.05,30.77,616.76,,
+SM5_T0_3S,1,6,6,Scytothalia dorycarpa,SM5,10,0,T0,20,5.455,1.01,2.36,-17.73,0.27,31.44,116.43,,
+SM5_T0_4S,1,7,7,Scytothalia dorycarpa,SM5,10,0,T0,20,5.222,0.96,2.78,-17.63,<<0.1,30.03,-,,
+SM5_T0_5S,1,8,8,Scytothalia dorycarpa,SM5,10,0,T0,20,5.162,0.95,3.54,-17.98,0.19,31.12,166.10,,
+SM5_T0_6S,1,9,9,Scytothalia dorycarpa,SM5,10,0,T0,20,5.096,0.94,3.19,-17.51,0.04,31.58,740.94,,
+SM5_T0_7S,1,10,10,Scytothalia dorycarpa,SM5,10,0,T0,20,5.693,1.05,3.09,-17.72,<<0.1,32.90,-,,
+SM5_T0_8S,1,11,11,Scytothalia dorycarpa,SM5,10,0,T0,20,5.203,0.96,2.64,-18.01,0.23,32.07,140.25,,
+SM5_T0_9S,1,12,12,Scytothalia dorycarpa,SM5,10,0,T0,20,5.363,0.99,1.06,-17.17,0.16,33.17,210.90,,
+SM5_T0_10S,1,13,13,Scytothalia dorycarpa,SM5,10,0,T0,20,5.268,0.97,2.57,-17.04,0.28,31.74,112.06,,
+S1_T1_1E,13,14,14,Ecklonia radiata,SHALLOW 1,10,14,T1,14,2.755,0.60,4.10,-17.21,0.31,31.61,100.74,,coffee grinder
+S1_T1_2E,13,15,15,Ecklonia radiata,SHALLOW 1,10,14,T1,9,1.512,0.33,4.60,-17.73,0.53,30.31,57.71,1 amphipod,coffee grinder
+S1_T1_3E,13,16,16,Ecklonia radiata,SHALLOW 1,10,14,T1,14,2.149,0.47,4.71,-17.85,0.65,29.75,45.97,13 amphipods,coffee grinder
+S1_T1_4E,13,17,17,Ecklonia radiata,SHALLOW 1,10,14,T1,4,0.395,0.09,4.83,-17.96,0.83,29.87,36.21,12 amphipods,coffee grinder
+S1_T1_5E,13,18,18,Ecklonia radiata,SHALLOW 1,10,14,T1,7,0.872,0.19,4.99,-18.26,0.81,29.31,36.32,5 amphipods,coffee grinder
+S1_T1_6E,13,19,19,Ecklonia radiata,SHALLOW 1,10,14,T1,1,0.035,0.01,5.18,-18.97,0.96,30.08,31.49,not enough tissue for TGA,coffee grinder
+S1_T1_1S,13,20,20,Scytothalia dorycarpa,SHALLOW 1,10,14,T1,6,0.875,0.16,3.65,-20.43,0.24,29.56,121.83,10 amphipods,coffee grinder
+S1_T1_2S,13,21,21,Scytothalia dorycarpa,SHALLOW 1,10,14,T1,5,1.044,0.19,3.43,-21.51,0.15,31.70,209.57,11 amphipods,coffee grinder
+S1_T1_3S,13,22,22,Scytothalia dorycarpa,SHALLOW 1,10,14,T1,7,1.33,0.25,3.84,-19.16,0.26,32.05,121.68,7 amphipods; 2 crabs,coffee grinder
+S1_T1_4S,13,23,23,Scytothalia dorycarpa,SHALLOW 1,10,14,T1,7,1.346,0.25,3.57,-17.84,0.24,32.57,134.59,9 amphipods,coffee grinder
+S1_T1_5S,13,24,24,Scytothalia dorycarpa,SHALLOW 1,10,14,T1,8,1.825,0.34,3.45,-19.66,0.10,32.81,313.65,10 amphipods; 2 worm-like,coffee grinder
+S1_T1_6S,13,25,25,Scytothalia dorycarpa,SHALLOW 1,10,14,T1,8,1.459,0.27,3.15,-16.99,0.05,30.82,622.94,12 amphipods,coffee grinder
+M1_T1_1E,16,26,26,Ecklonia radiata,MID 1,20,14,T1,19,3.177,0.70,4.62,-18.51,0.65,30.17,46.45,,
+M1_T1_2E,16,27,27,Ecklonia radiata,MID 1,20,14,T1,12,2.215,0.49,4.57,-17.86,0.20,30.42,148.56,slightly burned,
+M1_T1_3E,16,28,28,Ecklonia radiata,MID 1,20,14,T1,2,0.222,0.05,3.59,-18.95,0.24,29.92,125.80,only 2 punches for TGA,
+M1_T1_4E,16,29,29,Ecklonia radiata,MID 1,20,14,T1,18,3.944,0.86,4.06,-16.32,0.14,31.84,227.90,>20 amphipods,
+M1_T1_5E,16,30,30,Ecklonia radiata,MID 1,20,14,T1,12,2.439,0.53,4.53,-16.84,0.51,29.73,58.62,,
+M1_T1_6E,16,31,31,Ecklonia radiata,MID 1,20,14,T1,8,1.097,0.24,5.47,-18.16,0.72,28.37,39.17,,
+M1_T1_1S,16,32,32,Scytothalia dorycarpa,MID 1,20,14,T1,5,1.254,0.23,3.18,-17.39,0.22,31.21,142.40,,
+M1_T1_2S,16,33,33,Scytothalia dorycarpa,MID 1,20,14,T1,5,1.126,0.21,3.69,-17.02,0.16,30.27,187.40,,
+M1_T1_3S,16,34,34,Scytothalia dorycarpa,MID 1,20,14,T1,6,1.609,0.30,3.65,-16.31,0.12,30.69,253.46,,
+M1_T1_4S,16,35,35,Scytothalia dorycarpa,MID 1,20,14,T1,9,2.351,0.43,3.20,-19.73,0.09,29.77,318.21,,
+M1_T1_5S,16,36,36,Scytothalia dorycarpa,MID 1,20,14,T1,11,2.723,0.50,3.18,-16.44,0.30,30.37,101.59,,
+M1_T1_6S,16,37,37,Scytothalia dorycarpa,MID 1,20,14,T1,7,1.749,0.32,3.73,-16.31,0.22,30.71,141.66,,
+S2_T1_1E,14,38,,Ecklonia radiata,SHALLOW 2,10,14,T1,0,0,0.00,,,,,,,
+S2_T1_2E,14,39,38,Ecklonia radiata,SHALLOW 2,10,14,T1,1,0.01,0.00,4.81,-19.41,0.61,29.90,49.07,Only 2x punch for TGA,coffee grinder
+S2_T1_3E,14,40,39,Ecklonia radiata,SHALLOW 2,10,14,T1,13,2.412,0.53,4.69,-18.64,0.70,30.33,43.30,,coffee grinder
+S2_T1_4E,14,41,40,Ecklonia radiata,SHALLOW 2,10,14,T1,10,1.745,0.38,4.51,-16.74,0.55,32.07,58.30,,coffee grinder
+S2_T1_5E,14,42,41,Ecklonia radiata,SHALLOW 2,10,14,T1,3,0.516,0.11,4.26,-21.44,1.88,33.36,17.79,only stipe,coffee grinder
+S2_T1_6E,14,43,42,Ecklonia radiata,SHALLOW 2,10,14,T1,16,3.005,0.66,4.69,-17.73,0.79,31.12,39.40,,coffee grinder
+S2_T1_1S,14,44,43,Scytothalia dorycarpa,SHALLOW 2,10,14,T1,8,1.507,0.28,3.35,-20.38,0.36,29.56,83.26,,
+S2_T1_2S,14,45,44,Scytothalia dorycarpa,SHALLOW 2,10,14,T1,5,0.631,0.12,3.26,-19.40,0.31,29.13,94.90,,
+S2_T1_3S,14,46,45,Scytothalia dorycarpa,SHALLOW 2,10,14,T1,8,1.44,0.27,3.81,-18.65,0.35,28.77,83.28,,
+S2_T1_4S,14,47,46,Scytothalia dorycarpa,SHALLOW 2,10,14,T1,9,1.778,0.33,3.76,-16.02,0.22,29.66,132.50,,
+S2_T1_5S,14,48,47,Scytothalia dorycarpa,SHALLOW 2,10,14,T1,5,0.773,0.14,3.42,-17.23,0.07,29.74,436.48,,
+S2_T1_6S,14,49,48,Scytothalia dorycarpa,SHALLOW 2,10,14,T1,7,1.493,0.28,3.35,-18.88,0.36,30.44,84.90,,
+M2_T1_1E,17,50,,Ecklonia radiata,MID 2,20,14,T1,0,0,0.00,,,,,,,
+M2_T1_2E,17,51,,Ecklonia radiata,MID 2,20,14,T1,0,0,0.00,,,,,,,
+M2_T1_3E,17,52,49,Ecklonia radiata,MID 2,20,14,T1,1,0.026,0.01,5.20,-17.69,0.35,29.83,84.59,onion bag still sealed,mortar and pessle
+M2_T1_4E,17,53,50,Ecklonia radiata,MID 2,20,14,T1,18,4.185,0.92,4.10,-16.04,0.50,34.24,68.88,*MID2 has most fauna of above sites,mortar and pessle
+M2_T1_5E,17,54,51,Ecklonia radiata,MID 2,20,14,T1,16,2.297,0.50,5.39,-18.39,0.81,28.47,35.00,,mortar and pessle
+M2_T1_6E,17,55,52,Ecklonia radiata,MID 2,20,14,T1,17,2.954,0.65,4.57,-18.49,0.99,31.02,31.28,,mortar and pessle
+M2_T1_1S,17,56,53,Scytothalia dorycarpa,MID 2,20,14,T1,5,1.004,0.19,3.07,-20.05,0.14,30.60,213.97,,mortar and pessle
+M2_T1_2S,17,57,54,Scytothalia dorycarpa,MID 2,20,14,T1,5,1.088,0.20,3.28,-18.35,0.21,30.50,147.42,,mortar and pessle
+M2_T1_3S,17,58,55,Scytothalia dorycarpa,MID 2,20,14,T1,7,1.74,0.32,2.87,-17.45,0.06,31.90,504.98,,mortar and pessle
+M2_T1_4S,17,59,56,Scytothalia dorycarpa,MID 2,20,14,T1,14,3.921,0.72,3.35,-19.79,0.07,30.74,417.48,,mortar and pessle
+M2_T1_5S,17,60,57,Scytothalia dorycarpa,MID 2,20,14,T1,13,2.863,0.53,3.83,-19.48,0.07,28.70,412.50,,mortar and pessle
+M2_T1_6S,17,61,58,Scytothalia dorycarpa,MID 2,20,14,T1,12,3.075,0.57,3.06,-17.56,<<0.1,31.82,-,,mortar and pessle
+S3_T1_1E,15,62,59,Ecklonia radiata,SHALLOW 3,10,14,T1,14,2.007,0.44,4.86,-18.94,1.20,31.32,26.03,burned,coffee grinder
+S3_T1_2E,15,63,60,Ecklonia radiata,SHALLOW 3,10,14,T1,14,2.564,0.56,4.44,-19.12,0.42,30.16,72.21,,coffee grinder
+S3_T1_3E,15,64,61,Ecklonia radiata,SHALLOW 3,10,14,T1,7,3.064,0.67,4.35,-17.76,0.39,32.16,83.31,,coffee grinder
+S3_T1_4E,15,65,62,Ecklonia radiata,SHALLOW 3,10,14,T1,17,1.151,0.25,4.79,-18.24,0.95,32.86,34.76,,coffee grinder
+S3_T1_5E,15,66,63,Ecklonia radiata,SHALLOW 3,10,14,T1,6,0.749,0.16,4.93,-18.30,0.98,29.74,30.34,3 punches for TGA,coffee grinder
+S3_T1_6E,15,67,64,Ecklonia radiata,SHALLOW 3,10,14,T1,9,0.944,0.21,4.35,-19.76,0.61,27.26,45.04,3 punches for TGA,coffee grinder
+S3_T1_7E,15,68,65,Ecklonia radiata,SHALLOW 3,10,14,T1,6,0.979,0.21,3.04,-18.55,0.28,31.12,111.21,,coffee grinder
+S3_T1_1S,15,69,66,Scytothalia dorycarpa,SHALLOW 3,10,14,T1,3,0.48,0.09,3.27,-16.89,0.32,30.78,97.62,,coffee grinder
+S3_T1_2S,15,70,67,Scytothalia dorycarpa,SHALLOW 3,10,14,T1,6,1.287,0.24,3.33,-16.07,0.34,31.16,92.41,,coffee grinder
+S3_T1_3S,15,71,68,Scytothalia dorycarpa,SHALLOW 3,10,14,T1,4,0.979,0.18,2.99,-19.04,0.08,31.73,378.71,,coffee grinder
+S3_T1_4S,15,72,69,Scytothalia dorycarpa,SHALLOW 3,10,14,T1,9,2.083,0.38,3.11,-17.77,0.03,31.53,1192.53,,coffee grinder
+S3_T1_5S,15,73,70,Scytothalia dorycarpa,SHALLOW 3,10,14,T1,5,1.061,0.20,3.88,-21.23,0.15,33.50,218.72,,coffee grinder
+S3_T1_6S,15,74,71,Scytothalia dorycarpa,SHALLOW 3,10,14,T1,4,0.88,0.16,3.61,-19.89,0.21,31.51,146.67,,coffee grinder
+M3_T1_1E,18,75,72,Ecklonia radiata,MID 3,20,14,T1,17,2.26,0.50,4.34,-17.17,0.83,31.92,38.31,burned,
+M3_T1_2E,18,76,73,Ecklonia radiata,MID 3,20,14,T1,16,2.44,0.54,4.69,-18.24,1.02,32.62,32.05,slightly burned,
+M3_T1_3E,18,77,74,Ecklonia radiata,MID 3,20,14,T1,13,2.354,0.52,4.66,-18.30,1.08,33.20,30.87,,
+M3_T1_4E,18,78,75,Ecklonia radiata,MID 3,20,14,T1,19,2.885,0.63,4.56,-16.29,0.71,31.00,43.81,,
+M3_T1_1S,18,79,76,Scytothalia dorycarpa,MID 3,20,14,T1,7,1.437,0.27,3.25,-17.00,0.28,31.16,112.98,,
+M3_T1_2S,18,80,77,Scytothalia dorycarpa,MID 3,20,14,T1,7,1.729,0.32,3.39,-19.61,0.13,31.72,237.12,,
+M3_T1_3S,18,81,78,Scytothalia dorycarpa,MID 3,20,14,T1,10,2.292,0.42,3.97,-18.67,0.32,32.93,102.97,,
+M3_T1_4S,18,82,79,Scytothalia dorycarpa,MID 3,20,14,T1,3,0.622,0.11,2.99,-20.34,0.27,31.36,116.79,,
+M3_T1_5S,18,83,80,Scytothalia dorycarpa,MID 3,20,14,T1,11,2.276,0.42,3.79,-22.27,0.24,32.17,132.82,,
+M3_T1_6S,18,84,81,Scytothalia dorycarpa,MID 3,20,14,T1,3,0.554,0.10,3.46,-17.49,0.18,32.63,177.88,,
+D1_T1_1E,19,85,82,Ecklonia radiata,DEEP 1,50,14,T1,16,3.003,0.66,4.14,-15.60,0.43,33.40,76.92,,
+D1_T1_2E,19,86,83,Ecklonia radiata,DEEP 1,50,14,T1,16,2.607,0.57,3.80,-16.68,0.26,31.44,122.41,,
+D1_T1_3E,19,87,84,Ecklonia radiata,DEEP 1,50,14,T1,15,2.099,0.46,4.53,-17.32,0.72,29.43,40.78,tissue highly degraded - slimy,
+D1_T1_4E,19,88,85,Ecklonia radiata,DEEP 1,50,14,T1,6,0.47,0.10,5.09,-20.75,1.95,33.66,17.24,some sediment very fine,
+D1_T1_5E,19,89,86,Ecklonia radiata,DEEP 1,50,14,T1,14,2.509,0.55,4.94,-17.44,0.77,31.58,40.80,,
+D1_T1_6E,19,90,87,Ecklonia radiata,DEEP 1,50,14,T1,14,2.477,0.54,4.67,-16.78,0.89,30.35,34.06,,
+D1_T1_1S,19,91,88,Scytothalia dorycarpa,DEEP 1,50,14,T1,7,1.104,0.20,3.08,-16.44,0.10,30.74,293.56,,
+D1_T1_2S,19,92,89,Scytothalia dorycarpa,DEEP 1,50,14,T1,8,2.004,0.37,3.27,-18.48,0.44,32.49,74.15,small amount of fine sediment,
+D1_T1_3S,19,93,90,Scytothalia dorycarpa,DEEP 1,50,14,T1,9,1.831,0.34,2.97,-16.79,0.15,31.78,210.85,,
+D1_T1_4S,19,94,91,Scytothalia dorycarpa,DEEP 1,50,14,T1,8,1.435,0.26,3.49,-17.31,0.26,32.19,125.37,,
+D1_T1_5S,19,95,92,Scytothalia dorycarpa,DEEP 1,50,14,T1,6,1.047,0.19,3.49,-18.93,0.35,31.50,91.21,,
+D1_T1_6S,19,96,93,Scytothalia dorycarpa,DEEP 1,50,14,T1,7,1.186,0.22,3.08,-16.39,0.15,30.20,201.52,,
+D3_T1_1E,21,97,94,Ecklonia radiata,DEEP 3,50,14,T1,7,1.08,0.24,4.85,-17.55,1.09,30.40,27.84,,coffee grinder
+D3_T1_2E,21,98,95,Ecklonia radiata,DEEP 3,50,14,T1,3,0.26,0.06,5.47,-17.93,1.16,26.67,22.94,,coffee grinder
+D3_T1_3E,21,99,96,Ecklonia radiata,DEEP 3,50,14,T1,20,5.163,1.13,4.18,-15.82,0.54,33.14,61.30,,coffee grinder
+D3_T1_4E,21,100,97,Ecklonia radiata,DEEP 3,50,14,T1,20,4.351,0.95,4.84,-16.42,0.50,31.55,63.60,,coffee grinder
+D3_T1_5E,21,101,98,Ecklonia radiata,DEEP 3,50,14,T1,19,4.598,1.01,4.66,-17.10,0.71,31.87,44.85,,coffee grinder
+D3_T1_6E,21,102,99,Ecklonia radiata,DEEP 3,50,14,T1,14,2.357,0.52,5.34,-17.50,1.13,28.59,25.27,,coffee grinder
+D3_T1_1S,21,103,100,Scytothalia dorycarpa,DEEP 3,50,14,T1,2,0.284,0.05,3.52,-17.94,0.45,30.28,66.67,,
+D3_T1_2S,21,104,101,Scytothalia dorycarpa,DEEP 3,50,14,T1,4,0.651,0.12,3.32,-16.77,0.35,29.74,85.23,,
+D3_T1_3S,21,105,102,Scytothalia dorycarpa,DEEP 3,50,14,T1,4,0.8,0.15,3.82,-18.91,0.56,29.08,51.66,,
+D3_T1_4S,21,106,103,Scytothalia dorycarpa,DEEP 3,50,14,T1,5,0.884,0.16,3.83,-18.93,0.23,32.13,137.43,,
+D3_T1_5S,21,107,104,Scytothalia dorycarpa,DEEP 3,50,14,T1,5,0.892,0.16,3.65,-17.97,0.34,29.27,86.65,,
+D3_T1_6S,21,108,105,Scytothalia dorycarpa,DEEP 3,50,14,T1,9,1.663,0.31,3.32,-19.68,0.46,30.66,67.13,,
+D2_T1_2E,20,109,,Ecklonia radiata,DEEP 2,50,14,T1,0,0,0.00,,,,,,,
+D2_T1_2E,20,110,106,Ecklonia radiata,DEEP 2,50,14,T1,2,0.263,0.06,4.90,-18.39,1.01,27.71,27.56,,coffee grinder
+D2_T1_3E,20,111,107,Ecklonia radiata,DEEP 2,50,14,T1,17,2.937,0.64,4.75,-16.76,0.81,29.89,36.78,,coffee grinder
+D2_T1_4E,20,112,108,Ecklonia radiata,DEEP 2,50,14,T1,18,3.016,0.66,4.92,-20.71,1.00,29.05,29.14,,
+D2_T1_5E,20,113,109,Ecklonia radiata,DEEP 2,50,14,T1,7,0.938,0.21,5.32,-20.27,1.27,27.07,21.28,,
+D2_T1_6E,20,114,110,Ecklonia radiata,DEEP 2,50,14,T1,5,0.877,0.19,5.86,-18.31,1.24,28.45,23.04,,none
+D2_T1_1S,20,115,111,Scytothalia dorycarpa,DEEP 2,50,14,T1,10,1.684,0.31,4.04,-19.79,0.50,29.96,60.10,,
+D2_T1_2S,20,116,112,Scytothalia dorycarpa,DEEP 2,50,14,T1,6,1.239,0.23,2.36,-18.51,0.22,32.75,151.01,,
+D2_T1_3S,20,117,113,Scytothalia dorycarpa,DEEP 2,50,14,T1,6,1.436,0.26,3.22,-17.13,0.14,30.20,213.86,,
+D2_T1_4S,20,118,114,Scytothalia dorycarpa,DEEP 2,50,14,T1,7,1.191,0.22,4.07,-17.35,0.39,29.45,76.36,,
+D2_T1_5S,20,119,115,Scytothalia dorycarpa,DEEP 2,50,14,T1,10,1.828,0.34,2.93,-18.61,0.42,29.20,69.48,,
+D2_T1_6S,20,120,116,Scytothalia dorycarpa,DEEP 2,50,14,T1,8,1.395,0.26,3.25,-17.87,0.36,29.32,82.55,,
+S1_T2_1E,22,121,117,Ecklonia radiata,SHALLOW 1,10,31,T2,13,2.223,0.49,5.06,-16.95,0.87,30.00,34.62,,coffee grinder
+S1_T2_2E,22,122,118,Ecklonia radiata,SHALLOW 1,10,31,T2,2.2,0.22,0.05,4.33,-17.30,0.34,28.20,82.36,,
+S1_T2_3E,22,123,119,Ecklonia radiata,SHALLOW 1,10,31,T2,5.2,0.957,0.21,4.37,-16.93,0.51,30.31,58.94,,
+S1_T2_4E,22,124,120,Ecklonia radiata,SHALLOW 1,10,31,T2,0.1,0.021,0.00,5.35,-19.29,1.22,32.50,26.71,,
+S1_T2_1S,22,125,121,Scytothalia dorycarpa,SHALLOW 1,10,31,T2,4,0.956,0.18,3.64,-20.14,0.15,30.32,208.22,,
+S1_T2_2S,22,126,122,Scytothalia dorycarpa,SHALLOW 1,10,31,T2,1.7,0.327,0.06,3.51,-18.48,0.26,30.71,119.09,,
+S1_T2_3S,22,127,123,Scytothalia dorycarpa,SHALLOW 1,10,31,T2,2.3,0.614,0.11,3.50,-20.12,0.06,30.76,491.62,,
+S1_T2_4S,22,128,124,Scytothalia dorycarpa,SHALLOW 1,10,31,T2,0.9,0.239,0.04,3.19,-21.18,0.14,33.07,241.87,,
+M1_T2_1E,23,129,,Ecklonia radiata,MID 1,20,31,T2,0,0,0.00,,,,,,,
+M1_T2_2E,23,130,125,Ecklonia radiata,MID 1,20,31,T2,2.3,0.42,0.09,4.05,-20.11,0.89,27.43,30.88,3 punch for TGA,
+M1_T2_3E,23,131,126,Ecklonia radiata,MID 1,20,31,T2,1.125,0.123,0.03,5.02,-18.03,1.01,26.98,26.60,,
+M1_T2_4E,23,132,127,Ecklonia radiata,MID 1,20,31,T2,10,1.538,0.34,4.96,-18.02,1.04,28.68,27.71,,
+M1_T2_5E,23,133,128,Ecklonia radiata,MID 1,20,31,T2,17.5,3.079,0.68,4.29,-16.57,0.35,29.62,84.97,,
+M1_T2_6E,23,134,129,Ecklonia radiata,MID 1,20,31,T2,13,2.169,0.48,4.33,-17.19,0.58,29.42,50.44,,
+M1_T2_1S,23,135,130,Scytothalia dorycarpa,MID 1,20,31,T2,4.8,1.041,0.19,2.34,-19.49,0.19,30.82,164.17,,
+M1_T2_2S,23,136,131,Scytothalia dorycarpa,MID 1,20,31,T2,6,1.493,0.28,2.62,-19.98,0.27,31.16,114.29,,
+M1_T2_3S,23,137,132,Scytothalia dorycarpa,MID 1,20,31,T2,2.3,0.687,0.13,2.70,-17.44,0.32,25.88,81.48,,
+M1_T2_4S,23,138,133,Scytothalia dorycarpa,MID 1,20,31,T2,2.4,0.706,0.13,2.79,-16.24,0.22,31.19,138.71,3 punch for TGA,
+M1_T2_5S,23,139,134,Scytothalia dorycarpa,MID 1,20,31,T2,0.8,0.211,0.04,3.20,-18.05,0.08,30.61,363.96,,
+M1_T2_6S,23,140,135,Scytothalia dorycarpa,MID 1,20,31,T2,5.7,1.692,0.31,3.33,-22.55,0.06,29.79,500.94,3 punches for TGA,
+M2_T2_1E,24,141,136,Ecklonia radiata,MID 2,20,31,T2,1.5,0.163,0.04,4.91,-18.35,0.64,28.68,44.90,,
+M2_T2_2E,24,142,137,Ecklonia radiata,MID 2,20,31,T2,15,2.517,0.55,4.65,-17.02,0.52,28.32,54.41,,
+M2_T2_3E,24,143,138,Ecklonia radiata,MID 2,20,31,T2,13,2.167,0.48,4.51,-18.27,0.94,29.36,31.40,,
+M2_T2_4E,24,144,139,Ecklonia radiata,MID 2,20,31,T2,8,1.062,0.23,4.43,-18.33,0.50,25.67,51.82,,
+M2_T2_5E,24,145,140,Ecklonia radiata,MID 2,20,31,T2,3.7,0.574,0.13,5.01,-20.37,0.83,30.11,36.47,,
+M2_T2_1S,24,146,141,Scytothalia dorycarpa,MID 2,20,31,T2,2,0.726,0.13,2.44,-18.94,0.21,32.21,155.49,,
+M2_T2_2S,24,147,142,Scytothalia dorycarpa,MID 2,20,31,T2,2,0.507,0.09,2.51,-19.02,0.20,33.66,167.08,,
+M2_T2_3S,24,148,143,Scytothalia dorycarpa,MID 2,20,31,T2,6,1.736,0.32,3.34,-20.36,0.18,33.46,184.98,,
+M2_T2_4S,24,149,144,Scytothalia dorycarpa,MID 2,20,31,T2,3,0.682,0.13,2.09,-19.31,0.10,29.79,291.33,,
+M2_T2_5S,24,150,145,Scytothalia dorycarpa,MID 2,20,31,T2,1.1,0.472,0.09,3.27,-19.01,0.06,33.91,566.40,,
+M2_T2_6S,24,151,146,Scytothalia dorycarpa,MID 2,20,31,T2,2.1,0.427,0.08,2.40,-18.11,0.18,30.68,167.40,not enough biomass for TGA,
+M3_T2_1E,25,152,147,Ecklonia radiata,MID 3,20,31,T2,0.7,0.023,0.01,3.90,-17.48,0.21,31.17,149.20,,coffee grinder
+M3_T2_2E,25,153,148,Ecklonia radiata,MID 3,20,31,T2,17.37,2.84,0.62,4.74,-17.64,0.91,29.58,32.53,,coffee grinder
+M3_T2_3E,25,154,149,Ecklonia radiata,MID 3,20,31,T2,7.4,1.252,0.27,4.85,-17.43,0.76,30.56,40.37,,coffee grinder
+M3_T2_4E,25,155,150,Ecklonia radiata,MID 3,20,31,T2,14.7,2.636,0.58,4.34,-15.91,0.57,31.01,54.46,,coffee grinder
+M3_T2_5E,25,156,151,Ecklonia radiata,MID 3,20,31,T2,9.1,1.506,0.33,4.49,-18.81,0.74,29.11,39.33,,coffee grinder
+M3_T2_6E,25,157,152,Ecklonia radiata,MID 3,20,31,T2,3.3,0.506,0.11,4.91,-16.90,0.92,30.41,32.88,,coffee grinder
+M3_T2_1S,25,158,153,Scytothalia dorycarpa,MID 3,20,31,T2,3.6,0.772,0.14,3.15,-18.92,0.26,30.88,117.98,,
+M3_T2_2S,25,159,154,Scytothalia dorycarpa,MID 3,20,31,T2,1.9,0.48,0.09,3.39,-19.01,0.09,32.78,352.07,,
+M3_T2_3S,25,160,155,Scytothalia dorycarpa,MID 3,20,31,T2,2.4,0.526,0.10,3.21,-21.21,0.29,31.44,107.65,,
+M3_T2_4S,25,161,156,Scytothalia dorycarpa,MID 3,20,31,T2,0.3,0.04,0.01,2.75,-18.68,0.13,30.09,236.87,,
+M3_T2_5S,25,162,157,Scytothalia dorycarpa,MID 3,20,31,T2,9.6,2.05,0.38,3.01,-19.33,0.09,29.92,322.74,,
+M3_T2_6S,25,163,158,Scytothalia dorycarpa,MID 3,20,31,T2,5.1,1.19,0.22,3.62,-15.38,0.16,30.01,186.17,,
+S1_T3_1E,26,164,159,Ecklonia radiata,SHALLOW 1,10,50,T4,11,1.992,0.44,4.77,-19.13,0.93,28.68,30.77,"July 17, 2021",
+S1_T3_2E,26,165,,Ecklonia radiata,SHALLOW 1,10,50,T4,0,0,0.00,,,,,, ,
+S1_T3_3E,26,166,,Ecklonia radiata,SHALLOW 1,10,50,T4,0,0,0.00,,,,,,,
+S1_T3_1S,26,167,160,Scytothalia dorycarpa,SHALLOW 1,10,50,T4,4,1.021,0.19,3.17,-17.92,0.26,31.55,122.55,"July 17, 2021",
+S1_T3_2S,26,168,,Scytothalia dorycarpa,SHALLOW 1,10,50,T4,0,0,0.00,,,,,,,
+M2_T4_1E,28,169,,Ecklonia radiata,MID 2,20,50,T4,0,0,0.00,,,,,,onion bag-knot intact,
+M2_T4_2E,28,170,161,Ecklonia radiata,MID 2,20,50,T4,0.2,0.054,0.01,5.37,-19.63,1.30,30.52,23.47,onion bag - knot undone,
+M2_T4_3E,28,171,162,Ecklonia radiata,MID 2,20,50,T4,0.2,0.12,0.03,3.98,-18.60,0.62,30.89,49.71,onion bag - knot intact,
+M2_T4_4E,28,172,163,Ecklonia radiata,MID 2,20,50,T4,0.4,0.205,0.04,4.40,-16.45,1.06,30.91,29.15,onion bag - knot intact,
+M2_T4_5E,28,173,164,Ecklonia radiata,MID 2,20,50,T4,0.4,0.165,0.04,4.95,-17.04,1.17,29.39,25.21,onion bag - knot intact,
+M2_T4_1S,28,174,165,Scytothalia dorycarpa,MID 2,20,50,T4,0.2,0.128,0.02,2.58,-17.16,0.11,33.13,312.74,onion bag- knot undone,
+M2_T4_2S,28,175,166,Scytothalia dorycarpa,MID 2,20,50,T4,2,0.741,0.13,3.39,-20.16,0.18,32.91,184.89,onion bag- knot undone,
+M2_T4_3S,28,176,167,Scytothalia dorycarpa,MID 2,20,50,T4,0.2,0.101,0.02,3.42,-18.29,0.13,36.95,294.57,onion bag- knot undone,
+M2_T4_4S,28,177,168,Scytothalia dorycarpa,MID 2,20,50,T4,0.4,0.423,0.08,4.15,-19.21,0.17,33.38,195.71,onion bag-knot intact,
+M2_T4_5S,28,178,169,Scytothalia dorycarpa,MID 2,20,50,T4,2,0.553,0.10,2.87,-16.96,0.21,30.56,143.79,onion bag-knot intact,
+M1_T4_1E,27,179,170,Ecklonia radiata,MID 1,20,50,T4,0.5,0.261,0.06,4.32,-18.11,0.98,30.01,30.65,onion bag - knot intact,
+M1_T4_2E,27,180,171,Ecklonia radiata,MID 1,20,50,T4,0.6,0.238,0.05,4.44,-18.16,1.00,30.45,30.41,onion bag - knot undone,
+M1_T4_3E,27,181,172,Ecklonia radiata,MID 1,20,50,T4,0.2,0.261,0.06,4.67,-18.81,1.14,28.78,25.35,onion bag - knot intact,
+M1_T4_4E,27,182,173,Ecklonia radiata,MID 1,20,50,T4,0.1,0.104,0.02,4.67,-18.66,1.11,29.62,26.76,onion bag - knot intact,
+M1_T4_5E,27,183,174,Ecklonia radiata,MID 1,20,50,T4,3,0.533,0.12,4.45,-17.28,0.73,31.82,43.63,bag pierced-10cm rip,
+M1_T4_6E,27,184,,Ecklonia radiata,MID 1,20,50,T4,0,0,0.00,,,,,,onion bag-knot intact,
+M1_T4_7E,27,185,,Ecklonia radiata,MID 1,20,50,T4,0,0,0.00,,,,,,onion bag-knot intact,
+M1_T4_1S,27,186,175,Scytothalia dorycarpa,MID 1,20,50,T4,3,0.881,0.16,2.75,-16.68,0.20,30.65,149.60,onion bag- knot undone,
+M1_T4_2S,27,187,176,Scytothalia dorycarpa,MID 1,20,50,T4,2,0.635,0.12,2.49,-21.10,0.18,34.56,187.42,onion bag- knot undone,
+M1_T4_3S,27,188,177,Scytothalia dorycarpa,MID 1,20,50,T4,0.2,0.196,0.04,3.03,-20.07,0.16,32.42,201.14,onion bag- knot undone,
+M1_T4_4S,27,189,178,Scytothalia dorycarpa,MID 1,20,50,T4,0.1,0.146,0.03,3.33,-22.89,0.17,36.16,212.00,onion bag-knot intact,
+M1_T4_5S,27,190,179,Scytothalia dorycarpa,MID 1,20,50,T4,0.05,0.035,0.01,3.32,-20.19,0.25,32.46,131.12,onion bag-knot intact,
