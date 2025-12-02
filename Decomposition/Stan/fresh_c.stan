@@ -10,24 +10,14 @@ functions{
 data{
   int n;
   vector[n] Day;
-  vector[n] Proportion_mean;
-  vector[n] Proportion_sd;
+  vector[n] Proportion;
   array[n] int Species;
   int n_Species;
   array[n] int Treatment;
   int n_Treatment;
 }
 
-transformed data{
-  // Convert sd to nu because this is easier on the sampler
-  vector[n] Proportion_nu =
-  Proportion_mean .* ( 1 + Proportion_mean ) ./ Proportion_sd^2;
-}
-
 parameters{
-  // Parameter describing true, unobserved proportion
-  vector<lower=0>[n] p;
-  
   // Parameters describing mean
   /// Global parameters
   real alpha_mu;
@@ -132,14 +122,6 @@ model{
   
   // Beta prime likelihood
   for ( i in 1:n ) { // loop because betap isn't vectorised
-    p[i] ~ betap( p_mu[i] * ( 1 + nu[i] ) , 2 + nu[i] );
-  }
-  
-  // Beta prime measurement error model
-  for ( i in 1:n ) {
-    Proportion_mean[i] ~ betap(
-      p[i] * ( 1 + Proportion_nu[i] ),
-      2 + Proportion_nu[i]
-    );
+    Proportion[i] ~ betap( p_mu[i] * ( 1 + nu[i] ) , 2 + nu[i] );
   }
 }

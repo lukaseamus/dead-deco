@@ -10,24 +10,14 @@ functions{
 data{
   int n;
   vector[n] Day;
-  vector[n] Proportion_mean;
-  vector[n] Proportion_sd;
+  vector[n] Proportion;
   array[n] int Species;
   int n_Species;
   array[n] int Treatment;
   int n_Treatment;
 }
 
-transformed data{
-  // Convert sd to nu because this is easier on the sampler
-  vector[n] Proportion_nu =
-  Proportion_mean .* ( 1 + Proportion_mean ) ./ Proportion_sd^2;
-}
-
 parameters{
-  // Parameter describing true, unobserved proportion
-  vector<lower=0>[n] p;
-  
   // Parameters describing mean
   /// Global parameters
   real alpha_mu;
@@ -39,9 +29,9 @@ parameters{
   real<lower=0> log_tau_sigma;
   
   /// Species/treatment parameters
-  matrix[n_Species, n_Treatment] alpha;
-  matrix[n_Species, n_Treatment] log_mu;
-  matrix[n_Species, n_Treatment] log_tau;
+  matrix[n_Species, n_Treatment] alpha_z; // z-scores
+  matrix[n_Species, n_Treatment] log_mu_z;
+  matrix[n_Species, n_Treatment] log_tau_z;
   
   // Parameters describing precision
   /// Global parameters
@@ -54,9 +44,9 @@ parameters{
   real<lower=0> log_theta_sigma;
   
   /// Species/treatment parameters
-  matrix[n_Species, n_Treatment] log_epsilon;
-  matrix[n_Species, n_Treatment] log_lambda;
-  matrix[n_Species, n_Treatment] log_theta;
+  matrix[n_Species, n_Treatment] log_epsilon_z;
+  matrix[n_Species, n_Treatment] log_lambda_z;
+  matrix[n_Species, n_Treatment] log_theta_z;
 }
 
 model{
@@ -72,10 +62,14 @@ model{
   log_tau_sigma ~ normal( 0 , 0.5 ) T[0,];
   
   //// Species/treatment parameters
-  to_vector(alpha) ~ normal( alpha_mu , alpha_sigma );
-  to_vector(log_mu) ~ normal( log_mu_mu , log_mu_sigma );
-  to_vector(log_tau) ~ normal( log_tau_mu , log_tau_sigma );
+  to_vector(alpha_z) ~ normal( 0 , 1 );
+  to_vector(log_mu_z) ~ normal( 0 , 1 );
+  to_vector(log_tau_z) ~ normal( 0 , 1 );
 
+  matrix[n_Species, n_Treatment] alpha = alpha_z * alpha_sigma + alpha_mu;
+  matrix[n_Species, n_Treatment] log_mu = log_mu_z * log_mu_sigma + log_mu_mu;
+  matrix[n_Species, n_Treatment] log_tau = log_tau_z * log_tau_sigma + log_tau_mu;
+  
   /// Likelihood precision
   //// Global parameters
   log_epsilon_mu ~ normal( log(4e4) , 0.3 );
@@ -87,9 +81,13 @@ model{
   log_theta_sigma ~ normal( 0 , 0.3 ) T[0,];
   
   //// Species/treatment parameters
-  to_vector(log_epsilon) ~ normal( log_epsilon_mu , log_epsilon_sigma );
-  to_vector(log_lambda) ~ normal( log_lambda_mu , log_lambda_sigma );
-  to_vector(log_theta) ~ normal( log_theta_mu , log_theta_sigma );
+  to_vector(log_epsilon_z) ~ normal( 0 , 1 );
+  to_vector(log_lambda_z) ~ normal( 0 , 1 );
+  to_vector(log_theta_z) ~ normal( 0 , 1 );
+  
+  matrix[n_Species, n_Treatment] log_epsilon = log_epsilon_z * log_epsilon_sigma + log_epsilon_mu;
+  matrix[n_Species, n_Treatment] log_lambda = log_lambda_z * log_lambda_sigma + log_lambda_mu;
+  matrix[n_Species, n_Treatment] log_theta = log_theta_z * log_theta_sigma + log_theta_mu;
   
   // Model
   /// Likelihood mean
@@ -103,7 +101,7 @@ model{
     mu[i] = exp( log_mu[ Species[i], Treatment[i] ] );
     tau[i] = exp( log_tau[ Species[i], Treatment[i] ] );
   }
-  
+
   //// Function
   vector[n] p_mu = exp(
       Day .* a - ( a + tau ) .* 
@@ -132,14 +130,15 @@ model{
   
   // Beta prime likelihood
   for ( i in 1:n ) { // loop because betap isn't vectorised
-    p[i] ~ betap( p_mu[i] * ( 1 + nu[i] ) , 2 + nu[i] );
+    Proportion[i] ~ betap( p_mu[i] * ( 1 + nu[i] ) , 2 + nu[i] );
   }
-  
-  // Beta prime measurement error model
-  for ( i in 1:n ) {
-    Proportion_mean[i] ~ betap(
-      p[i] * ( 1 + Proportion_nu[i] ),
-      2 + Proportion_nu[i]
-    );
-  }
+}
+
+generated quantities{
+  matrix[n_Species, n_Treatment] alpha = alpha_z * alpha_sigma + alpha_mu;
+  matrix[n_Species, n_Treatment] log_mu = log_mu_z * log_mu_sigma + log_mu_mu;
+  matrix[n_Species, n_Treatment] log_tau = log_tau_z * log_tau_sigma + log_tau_mu;
+  matrix[n_Species, n_Treatment] log_epsilon = log_epsilon_z * log_epsilon_sigma + log_epsilon_mu;
+  matrix[n_Species, n_Treatment] log_lambda = log_lambda_z * log_lambda_sigma + log_lambda_mu;
+  matrix[n_Species, n_Treatment] log_theta = log_theta_z * log_theta_sigma + log_theta_mu;
 }
