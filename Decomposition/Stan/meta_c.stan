@@ -15,133 +15,77 @@ data{
   int n_Species;
   array[n] int Experiment;
   int n_Experiment;
-  array[n] int Condition;
-  int n_Condition;
 }
 
 parameters{
   // Parameters describing mean
-  /// Condition parameters
-  vector[n_Condition] alpha_c;
-  vector[n_Condition] log_mu_c;
-  vector[n_Condition] log_tau_c;
+  /// Global parameters
+  real log_delta_mu; // delta = alpha + tau
+  real log_mu_mu;
+  real log_tau_mu;
   
-  vector<lower=0>[n_Condition] alpha_sigma_s;
-  vector<lower=0>[n_Condition] log_mu_sigma_s;
-  vector<lower=0>[n_Condition] log_tau_sigma_s;
+  real<lower=0> log_delta_sigma_s;
+  real<lower=0> log_mu_sigma_s;
+  real<lower=0> log_tau_sigma_s;
   
-  vector<lower=0>[n_Condition] alpha_sigma_e;
-  vector<lower=0>[n_Condition] log_mu_sigma_e;
-  vector<lower=0>[n_Condition] log_tau_sigma_e;
+  real<lower=0> log_delta_sigma_e;
+  real<lower=0> log_mu_sigma_e;
+  real<lower=0> log_tau_sigma_e;
   
   /// Species parameters
-  matrix[n_Condition, n_Species] alpha_s;
-  matrix[n_Condition, n_Species] log_mu_s;
-  matrix[n_Condition, n_Species] log_tau_s;
+  vector[n_Species] log_delta_s; 
+  vector[n_Species] log_mu_s;
+  vector[n_Species] log_tau_s;
   
   /// Experiment parameters
-  matrix[n_Condition, n_Experiment] alpha_e;
-  matrix[n_Condition, n_Experiment] log_mu_e;
-  matrix[n_Condition, n_Experiment] log_tau_e;
+  vector[n_Experiment] log_delta_e; 
+  vector[n_Experiment] log_mu_e;
+  vector[n_Experiment] log_tau_e;
   
   // Parameters describing precision
-  /// Condition parameters
-  vector[n_Condition] log_epsilon_c;
-  vector[n_Condition] log_lambda_c;
-  vector[n_Condition] log_theta_c;
-
-  vector<lower=0>[n_Condition] log_epsilon_sigma_s;
-  vector<lower=0>[n_Condition] log_lambda_sigma_s;
-  vector<lower=0>[n_Condition] log_theta_sigma_s;
-  
-  vector<lower=0>[n_Condition] log_epsilon_sigma_e;
-  vector<lower=0>[n_Condition] log_lambda_sigma_e;
-  vector<lower=0>[n_Condition] log_theta_sigma_e;
-  
-  /// Species parameters
-  matrix[n_Condition, n_Species] log_epsilon_s;
-  matrix[n_Condition, n_Species] log_lambda_s;
-  matrix[n_Condition, n_Species] log_theta_s;
-  
-  /// Experiment parameters
-  matrix[n_Condition, n_Experiment] log_epsilon_e;
-  matrix[n_Condition, n_Experiment] log_lambda_e;
-  matrix[n_Condition, n_Experiment] log_theta_e;
+  real<lower=0> epsilon;
+  real<lower=0> lambda;
+  real<lower=0> theta;
 }
 
 model{
   // Priors
   /// Likelihood mean
-  //// Condition parameters
-  alpha_c ~ normal( 0 , 0.005 );
-  log_mu_c ~ normal( log(100) , 0.1 );
-  log_tau_c ~ normal( log(0.1) , 0.1 );
+  //// Global parameters
+  log_delta_mu ~ normal( log(0.05) , 0.4 );
+  log_mu_mu ~ normal( log(50) , 0.4 );
+  log_tau_mu ~ normal( log(0.1) , 0.4 );
   
-  alpha_sigma_s ~ normal( 0 , 0.005 ) T[0,]; // half-normal priors
-  log_mu_sigma_s ~ normal( 0 , 0.1 ) T[0,];
-  log_tau_sigma_s ~ normal( 0 , 0.1 ) T[0,];
+  log_delta_sigma_s ~ normal( 0 , 0.3 ) T[0,]; // half-normal priors
+  log_mu_sigma_s ~ normal( 0 , 0.3 ) T[0,];
+  log_tau_sigma_s ~ normal( 0 , 0.3 ) T[0,];
   
-  alpha_sigma_e ~ normal( 0 , 0.01 ) T[0,];
-  log_mu_sigma_e ~ normal( 0 , 0.1 ) T[0,];
-  log_tau_sigma_e ~ normal( 0 , 0.1 ) T[0,];
+  log_delta_sigma_e ~ normal( 0 , 0.3 ) T[0,];
+  log_mu_sigma_e ~ normal( 0 , 0.3 ) T[0,];
+  log_tau_sigma_e ~ normal( 0 , 0.3 ) T[0,];
   
-  //// Species and experiment parameters
-  for (i in 1:n_Condition) {
-    alpha_s[i,] ~ normal( 0 , alpha_sigma_s[i] );
-    log_mu_s[i,] ~ normal( 0 , log_mu_sigma_s[i] );
-    log_tau_s[i,] ~ normal( 0 , log_tau_sigma_s[i] );
-    alpha_e[i,] ~ normal( 0 , alpha_sigma_e[i] );
-    log_mu_e[i,] ~ normal( 0 , log_mu_sigma_e[i] );
-    log_tau_e[i,] ~ normal( 0 , log_tau_sigma_e[i] );
-  }
+  //// Species parameters
+  log_delta_s ~ normal( log_delta_mu , log_delta_sigma_s );
+  log_mu_s ~ normal( log_mu_mu , log_mu_sigma_s );
+  log_tau_s ~ normal( log_tau_mu , log_tau_sigma_s );
+  
+  //// Experiment parameters
+  log_delta_e ~ normal( 0 , log_delta_sigma_e );
+  log_mu_e ~ normal( 0 , log_mu_sigma_e );
+  log_tau_e ~ normal( 0 , log_tau_sigma_e );
   
   /// Likelihood precision
-  //// Condition parameters
-  log_epsilon_c ~ normal( log(4e4) , 0.1 );
-  log_lambda_c ~ normal( log(0.1) , 0.1 );
-  log_theta_c ~ normal( log(500) , 0.1 );
-  
-  log_epsilon_sigma_s ~ normal( 0 , 0.1 ) T[0,];
-  log_lambda_sigma_s ~ normal( 0 , 0.1 ) T[0,];
-  log_theta_sigma_s ~ normal( 0 , 0.1 ) T[0,];
-  
-  log_epsilon_sigma_e ~ normal( 0 , 0.1 ) T[0,];
-  log_lambda_sigma_e ~ normal( 0 , 0.1 ) T[0,];
-  log_theta_sigma_e ~ normal( 0 , 0.1 ) T[0,];
-  
-  //// Species and experiment parameters
-  for (i in 1:n_Condition) {
-    log_epsilon_s[i,] ~ normal( 0 , log_epsilon_sigma_s[i] );
-    log_lambda_s[i,] ~ normal( 0 , log_lambda_sigma_s[i] );
-    log_theta_s[i,] ~ normal( 0 , log_theta_sigma_s[i] );
-    log_epsilon_e[i,] ~ normal( 0 , log_epsilon_sigma_e[i] );
-    log_lambda_e[i,] ~ normal( 0 , log_lambda_sigma_e[i] );
-    log_theta_e[i,] ~ normal( 0 , log_theta_sigma_e[i] );
-  }
+  epsilon ~ gamma( square(4e4) / square(2e4) , 4e4 / square(2e4) );
+  lambda ~ exponential( 1 );
+  theta ~ gamma( square(500) / square(250) , 500 / square(250) );
   
   // Model
   /// Likelihood mean
   //// Parameters
-  vector[n] alpha;
-  vector[n] mu;
-  vector[n] tau;
-
-  for ( i in 1:n ) {
-    alpha[i] = 
-      alpha_c[ Condition[i] ] + 
-      alpha_s[ Condition[i] , Species[i] ] + 
-      alpha_e[ Condition[i] , Experiment[i] ];
-    mu[i] = exp(
-      log_mu_c[ Condition[i] ] + 
-      log_mu_s[ Condition[i] , Species[i] ] + 
-      log_mu_e[ Condition[i] , Experiment[i] ]
-    );
-    tau[i] = exp(
-      log_tau_c[ Condition[i] ] + 
-      log_tau_s[ Condition[i] , Species[i] ] + 
-      log_tau_e[ Condition[i] , Experiment[i] ]
-    );
-  }
+  vector[n] delta = exp( log_delta_s[Species] + log_delta_e[Experiment] );
+  vector[n] mu = exp( log_mu_s[Species] + log_mu_e[Experiment] );
+  vector[n] tau = exp( log_tau_s[Species] + log_tau_e[Experiment] );
+  vector[n] alpha = delta - tau;
   
   //// Function
   vector[n] r_mu = exp(
@@ -153,31 +97,9 @@ model{
     );
   
   /// Likelihood precision
-  //// Parameters
-  vector[n] epsilon;
-  vector[n] lambda;
-  vector[n] theta;
-  
-  for ( i in 1:n ) {
-    epsilon[i] = exp(
-      log_epsilon_c[ Condition[i] ] + 
-      log_epsilon_s[ Condition[i] , Species[i] ] + 
-      log_epsilon_e[ Condition[i] , Experiment[i] ]
-    );
-    lambda[i] = exp(
-      log_lambda_c[ Condition[i] ] + 
-      log_lambda_s[ Condition[i] , Species[i] ] + 
-      log_lambda_e[ Condition[i] , Experiment[i] ]
-    );
-    theta[i] = exp(
-      log_theta_c[ Condition[i] ] + 
-      log_theta_s[ Condition[i] , Species[i] ] + 
-      log_theta_e[ Condition[i] , Experiment[i] ]
-    );
-  }
-  
-  //// Function (this structure is better for most multilevel models)
-  vector[n] nu = theta + ( epsilon - theta ) .* exp( -lambda .* Day );
+  vector[n] nu = theta + exp(
+    log( epsilon - theta ) - lambda .* Day
+  );
   
   // Beta prime likelihood
   for ( i in 1:n ) { // loop because betap isn't vectorised

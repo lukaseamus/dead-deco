@@ -10,7 +10,7 @@ functions{
 data{
   int n;
   vector[n] Day;
-  vector[n] Proportion;
+  vector[n] Ratio;
   array[n] int Species;
   int n_Species;
   array[n] int Treatment;
@@ -20,16 +20,16 @@ data{
 parameters{
   // Parameters describing mean
   /// Global parameters
-  real alpha_mu;
+  real log_delta_mu; // delta = alpha + tau
   real log_mu_mu;
   real log_tau_mu;
   
-  real<lower=0> alpha_sigma;
+  real<lower=0> log_delta_sigma;
   real<lower=0> log_mu_sigma;
   real<lower=0> log_tau_sigma;
   
   /// Species/treatment parameters
-  matrix[n_Species, n_Treatment] alpha;
+  matrix[n_Species, n_Treatment] log_delta;
   matrix[n_Species, n_Treatment] log_mu;
   matrix[n_Species, n_Treatment] log_tau;
   
@@ -53,16 +53,16 @@ model{
   // Priors
   /// Likelihood mean
   //// Global parameters
-  alpha_mu ~ normal( -0.02 , 0.01 );
+  log_delta_mu ~ normal( log(0.03) , 0.3 );
   log_mu_mu ~ normal( log(40) , 0.3 );
-  log_tau_mu ~ normal( log(0.06) , 0.4 );
+  log_tau_mu ~ normal( log(0.06) , 0.3 );
   
-  alpha_sigma ~ normal( 0 , 0.02 ) T[0,]; // half-normal priors
-  log_mu_sigma ~ normal( 0 , 0.4 ) T[0,];
-  log_tau_sigma ~ normal( 0 , 0.5 ) T[0,];
+  log_delta_sigma ~ normal( 0 , 0.3 ) T[0,]; // half-normal priors
+  log_mu_sigma ~ normal( 0 , 0.3 ) T[0,];
+  log_tau_sigma ~ normal( 0 , 0.3 ) T[0,];
   
   //// Species/treatment parameters
-  to_vector(alpha) ~ normal( alpha_mu , alpha_sigma );
+  to_vector(log_delta) ~ normal( log_delta_mu , log_delta_sigma );
   to_vector(log_mu) ~ normal( log_mu_mu , log_mu_sigma );
   to_vector(log_tau) ~ normal( log_tau_mu , log_tau_sigma );
 
@@ -84,19 +84,21 @@ model{
   // Model
   /// Likelihood mean
   //// Parameters
-  vector[n] a;
+  vector[n] delta;
   vector[n] mu;
   vector[n] tau;
+  vector[n] alpha;
 
   for ( i in 1:n ) {
-    a[i] = alpha[ Species[i], Treatment[i] ];
+    delta[i] = exp( log_delta[ Species[i], Treatment[i] ] );
     mu[i] = exp( log_mu[ Species[i], Treatment[i] ] );
     tau[i] = exp( log_tau[ Species[i], Treatment[i] ] );
+    alpha[i] = delta[i] - tau[i];
   }
   
   //// Function
-  vector[n] p_mu = exp(
-      Day .* a - ( a + tau ) .* 
+  vector[n] r_mu = exp(
+      Day .* alpha - ( alpha + tau ) .* 
       mu ./ 5 .* (
         log1p_exp( 5 ./ mu .* ( Day - mu ) ) -
         log1p_exp( -5 )
@@ -122,6 +124,6 @@ model{
   
   // Beta prime likelihood
   for ( i in 1:n ) { // loop because betap isn't vectorised
-    Proportion[i] ~ betap( p_mu[i] * ( 1 + nu[i] ) , 2 + nu[i] );
+    Ratio[i] ~ betap( r_mu[i] * ( 1 + nu[i] ) , 2 + nu[i] );
   }
 }
