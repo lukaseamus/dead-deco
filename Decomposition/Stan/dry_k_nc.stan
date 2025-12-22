@@ -1,7 +1,7 @@
 data{
   int n;
   vector[n] Day;
-  vector[n] Proportion_mean;
+  vector[n] Ratio_mean;
   array[n] int Species;
   int n_Species;
   array[n] int Treatment;
@@ -21,21 +21,23 @@ parameters{
   matrix[n_Species, n_Treatment] log_sigma_z;
 }
 
+transformed parameters{
+  matrix[n_Species, n_Treatment] log_k = log_k_z * log_k_sigma + log_k_mu;
+  matrix[n_Species, n_Treatment] log_sigma = log_sigma_z * log_sigma_sigma + log_sigma_mu;
+}
+
 model{
   // Priors
   /// Global parameters
-  log_k_mu ~ normal( log(0.06) , 0.5 );
-  log_sigma_mu ~ normal( log(0.1) , 0.4 );
+  log_k_mu ~ normal( log(0.06) , 0.6 );
+  log_sigma_mu ~ normal( log(0.1) , 0.3 );
   
   log_k_sigma ~ normal( 0 , 0.6 ) T[0,]; // half-normal priors
-  log_sigma_sigma ~ normal( 0 , 0.5 ) T[0,];
+  log_sigma_sigma ~ normal( 0 , 0.3 ) T[0,];
   
   /// Species/treatment parameters
   to_vector(log_k_z) ~ normal( 0 , 1 );
   to_vector(log_sigma_z) ~ normal( 0 , 1 );
-
-  matrix[n_Species, n_Treatment] log_k = log_k_z * log_k_sigma + log_k_mu;
-  matrix[n_Species, n_Treatment] log_sigma = log_sigma_z * log_sigma_sigma + log_sigma_mu;
   
   // Model
   /// Parameters
@@ -48,13 +50,8 @@ model{
   }
 
   /// Function
-  vector[n] p_mu = exp( -k .* Day );
+  vector[n] r_mu = exp( -k .* Day );
   
   // Normal likelihood
-  Proportion_mean ~ normal( p_mu , sigma );
-}
-
-generated quantities{
-  matrix[n_Species, n_Treatment] log_k = log_k_z * log_k_sigma + log_k_mu;
-  matrix[n_Species, n_Treatment] log_sigma = log_sigma_z * log_sigma_sigma + log_sigma_mu;
+  Ratio_mean ~ normal( r_mu , sigma );
 }

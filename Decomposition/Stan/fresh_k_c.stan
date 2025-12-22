@@ -1,7 +1,7 @@
 data{
   int n;
   vector[n] Day;
-  vector[n] Proportion;
+  vector[n] Ratio;
   array[n] int Species;
   int n_Species;
   array[n] int Treatment;
@@ -24,11 +24,11 @@ parameters{
 model{
   // Priors
   /// Global parameters
-  log_k_mu ~ normal( log(0.06) , 0.5 );
-  log_sigma_mu ~ normal( log(0.1) , 0.4 );
+  log_k_mu ~ normal( log(0.06) , 0.6 );
+  log_sigma_mu ~ normal( log(0.1) , 0.3 );
   
   log_k_sigma ~ normal( 0 , 0.6 ) T[0,]; // half-normal priors
-  log_sigma_sigma ~ normal( 0 , 0.5 ) T[0,];
+  log_sigma_sigma ~ normal( 0 , 0.3 ) T[0,];
   
   /// Species/treatment parameters
   to_vector(log_k) ~ normal( log_k_mu , log_k_sigma );
@@ -45,8 +45,8 @@ model{
   }
   
   /// Function
-  vector[n] p_mu = exp( -k .* Day );
+  vector[n] r_mu = exp( -k .* Day );
 
   // Normal likelihood
-  Proportion ~ normal( p_mu , sigma );
+  Ratio ~ normal( r_mu , sigma );
 }
