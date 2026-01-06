@@ -50,7 +50,13 @@ PB %>%
   filter(n() > 1)
 # No duplication
 
-# 1.1.4 Visualise ####
+# 1.1.4 Check grouping ####
+PB %>% nrow()
+PB %$% nlevels(Community)
+PB %$% nlevels(Reference)
+PB %>% count(Community)
+
+# 1.1.5 Visualise ####
 PB %>%
   ggplot(aes(PB_plant, PB_detritus)) +
     geom_point() +
@@ -218,11 +224,7 @@ PB_forest %>%
                 alpha = 0.2) +
     theme_minimal()
 
-# 1.4 Kelp NPP ####
-
-# 1.4 Forest NPP ####
-
-# 1.6 Kelp k ####
+# 1.4 Kelp k ####
 # 1.4.1 Load data ####
 k <- here("Turnover", "k.csv") %>% 
   read_csv(col_types = list("f", "c", "c", "f", "c", "f", "f")) %T>%
@@ -240,6 +242,7 @@ k %<>%
   print()
 
 k %>% nrow() # 358 observations after filtering
+k %$% range(k)
 
 # 1.4.3 Check grouping ####
 # This is meta-meta-data with repeated references within reviews. I am
@@ -378,13 +381,13 @@ PB_c_samples$summary() %>%
   summarise(rhat_1.001 = mean( rhat > 1.001 ),
             rhat_mean = mean(rhat),
             rhat_sd = sd(rhat))
-# 8% of rhat above 1.001. rhat = 1.00 ± 0.000338.
+# 21% of rhat above 1.001. rhat = 1.00 ± 0.000822.
 
 PB_nc_samples$summary() %>%
   summarise(rhat_1.001 = mean( rhat > 1.001 ),
             rhat_mean = mean(rhat),
             rhat_sd = sd(rhat))
-# No rhat above 1.001. rhat = 1.00 ± 0.000141.
+# No rhat above 1.001. rhat = 1.00 ± 0.000111.
 
 # Chains
 require(bayesplot)
@@ -411,7 +414,7 @@ PB_nc_samples$draws(format = "df") %>%
   mcmc_pairs(pars = c("alpha[1]", "beta[1]"))
 PB_nc_samples$draws(format = "df") %>%
   mcmc_pairs(pars = c("alpha[2]", "beta[2]"))
-# Models are similar
+# Correlations are similar
 
 # 2.4 Prior-posterior comparison ####
 source("functions.R")
@@ -660,13 +663,13 @@ PB_kelp_c_samples$summary() %>%
   summarise(rhat_1.001 = mean( rhat > 1.001 ),
             rhat_mean = mean(rhat),
             rhat_sd = sd(rhat))
-# 4% of rhat above 1.001. rhat = 1.00 ± 0.000295.
+# 3% of rhat above 1.001. rhat = 1.00 ± 0.000270.
 
 PB_kelp_nc_samples$summary() %>%
   summarise(rhat_1.001 = mean( rhat > 1.001 ),
             rhat_mean = mean(rhat),
             rhat_sd = sd(rhat))
-# No rhat above 1.001. rhat = 1.00 ± 0.0000791.
+# No rhat above 1.001. rhat = 1.00 ± 0.0000730.
 
 # Chains
 PB_kelp_c_samples$draws(format = "df") %>%
@@ -873,13 +876,13 @@ PB_forest_c_samples$summary() %>%
   summarise(rhat_1.001 = mean( rhat > 1.001 ),
             rhat_mean = mean(rhat),
             rhat_sd = sd(rhat))
-# No rhat above 1.001. rhat = 1.00 ± 0.0000634.
+# No rhat above 1.001. rhat = 1.00 ± 0.0000718.
 
 PB_forest_nc_samples$summary() %>%
   summarise(rhat_1.001 = mean( rhat > 1.001 ),
             rhat_mean = mean(rhat),
             rhat_sd = sd(rhat))
-# No rhat above 1.001. rhat = 1.00 ± 0.000102.
+# No rhat above 1.001. rhat = 1.00 ± 0.0000801.
 
 # Chains
 PB_forest_c_samples$draws(format = "df") %>%
@@ -931,14 +934,13 @@ PB_forest_prior %>%
     group_name = "Reference"
   )
 # Posteriors look similar. Proceed with
-# centred model because of marginally
-# better rhat.
+# non-centred model.
 
 # 4.5 Prediction ####
 # 4.5.1 Global parameters ####
 PB_forest_prior_posterior <- PB_forest_prior %>% 
   prior_posterior_draws(
-    posterior_samples = PB_forest_c_samples,
+    posterior_samples = PB_forest_nc_samples,
     parameters = c("alpha_mu", "alpha_sigma", "sigma"),
     format = "short"
   ) %>%
@@ -1053,13 +1055,13 @@ k_c_samples$summary() %>%
   summarise(rhat_1.001 = mean( rhat > 1.001 ),
             rhat_mean = mean(rhat),
             rhat_sd = sd(rhat))
-# 100% of rhat above 1.001. rhat = 1.09 ± 0.0773.
+# 94% of rhat above 1.001. rhat = 1.00 ± 0.00108.
 
 k_nc_samples$summary() %>%
   summarise(rhat_1.001 = mean( rhat > 1.001 ),
             rhat_mean = mean(rhat),
             rhat_sd = sd(rhat))
-# No rhat above 1.001. rhat = 1.00 ± 0.000151.
+# No rhat above 1.001. rhat = 1.00 ± 0.0000796.
 
 # Chains
 k_c_samples$draws(format = "df") %>%
@@ -1229,6 +1231,7 @@ k_parameters <- k_prior_posterior %>%
   ) %>%
   select(!(contains("mean") | contains("sd"))) %T>%
   print()
+# All estimates are way too uncertain to make comparisons.
 
 # Save progress and clean up
 k_prior_posterior %>%
@@ -1314,16 +1317,18 @@ PB_D_parameters <- PB_D_posterior %>%
 PB_D_contrast <- PB_D_posterior %>%
   filter(Species %in% c("Kelps", "Trees")) %>%
   droplevels() %>%
-  select(starts_with("."), Species, log_Turnover, log_k) %>%
-  pivot_longer(cols = starts_with("log"),
+  select(starts_with("."), Species, Turnover, k) %>%
+  pivot_longer(cols = c(Turnover, k),
                names_to = "Variable") %>%
   pivot_wider(names_from = Species,
               values_from = value) %>%
-  mutate(difference = Kelps - Trees) %T>% # difference of logs = log ratio
+  mutate(difference = Kelps - Trees,
+         ratio = Kelps / Trees,
+         log_ratio = log10(ratio)) %T>%
   print()
 
 # Summarise
-PB_D_contrast %>%
+PB_D_contrast_summary <- PB_D_contrast %>%
   group_by(Variable) %>%
   summarise(
     across( everything(), list(mean = mean, sd = sd) ),
@@ -1334,9 +1339,12 @@ PB_D_contrast %>%
   mutate(
     Kelps = glue("{signif(Kelps_mean, 2)} ± {signif(Kelps_sd, 2)}"),
     Trees = glue("{signif(Trees_mean, 2)} ± {signif(Trees_sd, 2)}"),
-    difference = glue("{signif(difference_mean, 2)} ± {signif(difference_sd, 2)}")
+    difference = glue("{signif(difference_mean, 2)} ± {signif(difference_sd, 2)}"),
+    ratio = glue("{signif(ratio_mean, 2)} ± {signif(ratio_sd, 2)}"),
+    log_ratio = glue("{signif(log_ratio_mean, 2)} ± {signif(log_ratio_sd, 2)}")
   ) %>%
-  select(!(contains("mean") | contains("sd")))
+  select(!(contains("mean") | contains("sd"))) %T>%
+  print()
 # Probabilities for turnover time and half-life are the exact complements
 # to probabilities for turnover and decomposition rate because these
 # posteriors are related via constants.
@@ -1399,16 +1407,20 @@ require(ggridges)
 Fig_1a <- PB_D_posterior %>%
   filter(Species %in% c("Kelps", "Trees")) %>%
   droplevels() %>%
+  mutate(Species = Species %>%
+           fct_recode("Kelp forests" = "Kelps",
+                      "Terrestrial forests" = "Trees")) %>%
   ggplot() +
     geom_point(data = PB_kelp_forest,
                aes(Turnover, Plant %>% as.numeric() - 0.5, colour = Plant),
                shape = 16, alpha = 0.2, size = 2.4,
-               position = position_jitter(height = 0.2)) +
+               position = position_jitter(height = 0.3)) +
     stat_density_ridges(aes(Turnover, Species %>% as.numeric(), fill = Species),
                         colour = NA, n = 2^10, from = -3, to = 2,
-                        bandwidth = 5*0.02, scale = 2, alpha = 0.7) +
-    scale_colour_manual(values = c("#b6b12d", "#2b491e"), guide = "none") +
-    scale_fill_manual(values = c("#b6b12d", "#2b491e")) +
+                        bandwidth = 5*0.02, scale = 1.5, alpha = 0.7) +
+    scale_colour_manual(values = c("#a29400", "#004237"), guide = "none") +
+    scale_fill_manual(values = c("#a29400", "#004237"), 
+                      guide = guide_legend(reverse = TRUE)) +
     scale_x_log10(limits = c(10^-3, 10^2),
                   breaks = 10^(-3:2),
                   labels = scales::label_log(), # scales::label_math(10^.x) is the alternative
@@ -1419,35 +1431,63 @@ Fig_1a <- PB_D_posterior %>%
     theme(axis.title.y = element_blank(),
           axis.text.y = element_blank(),
           axis.ticks.y = element_blank(),
-          axis.line.y = element_blank())
+          axis.line.y = element_blank(),
+          plot.margin = margin(0.2, 0.5, 0.2, 0, unit = "cm"))
 
 Fig_1a
 
 # 6.6.3 Figure 1b ####
+PB_annotation <- PB_parameters %>%
+  mutate(
+    label_mu = glue(
+      "italic(μ)*' = {alpha} + {beta} × '*italic(x)"
+    ),
+    label_sigma = glue(
+      "italic(σ)*' = {sigma}'"
+    )
+  ) %>%
+  pivot_longer(cols = contains("label"),
+               names_to = "parameter",
+               values_to = "label",
+               names_prefix = "label_") %T>%
+  print()
+
+require(geomtextpath)
 Fig_1b <- PB_prediction %>%
   filter(Community != "Prior") %>%
   ggplot() +
+    geom_textline(data = tibble(x = c(10^-3, 10^3.4), y = c(10^-3, 10^3.4)), aes(x, y),
+                  label = "1:1", family = "Futura", size = 3.5, hjust = 1) +
     geom_point(data = PB, aes(PB_plant, PB_detritus),
                shape = 16, alpha = 0.5, size = 2.4) +
-    geom_line(data = . %>% filter(Community != "Unobserved"),
-              aes(10^log_PB_plant, 10^mu, group = Community)) +
     geom_ribbon(data = . %>% filter(Community == "Unobserved"),
                 aes(10^log_PB_plant, ymin = 10^log_PB_detritus.lower, 
                     ymax = 10^log_PB_detritus.upper,
                     alpha = factor(.width))) +
-    scale_alpha_manual(values = c(0.3, 0.2, 0.1), guide = "none") +
+    geom_line(data = . %>% filter(Community != "Unobserved"),
+              aes(10^log_PB_plant, 10^mu, group = Community),
+              linewidth = 0.8) +
+    geom_text(data = PB_annotation %>%
+                filter(Community == "Unobserved"),
+              aes(x = 10^-2.85, 
+                  y = c(10^5.5, 10^4.25), 
+                  label = label),
+              family = "Futura", size = 10, size.unit = "pt", 
+              hjust = 0, parse = TRUE) +
+    scale_alpha_manual(values = c(0.5, 0.4, 0.3), guide = "none") +
     scale_x_log10(limits = c(10^-3, 10^3),
                   breaks = 10^(-3:3),
                   labels = scales::label_log(),
                   oob = scales::oob_keep) +
-    scale_y_log10(limits = c(10^-4, 10^4),
-                  breaks = 10^(seq(-4, 4, 2)),
+    scale_y_log10(limits = c(10^-4, 10^6),
+                  breaks = 10^(seq(-4, 6, 2)),
                   labels = scales::label_log(),
                   oob = scales::oob_keep) +
     labs(x = expression("Turnover (year"^-1*")"),
          y = expression("Decomposition (year"^-1*")")) +
     coord_cartesian(expand = F, clip = "off") +
-    mytheme
+    mytheme +
+    theme(plot.margin = margin(0.2, 0.5, 0.2, 0, unit = "cm"))
 
 Fig_1b
 
@@ -1458,46 +1498,67 @@ Fig_1c <- PB_D_posterior %>%
   ggplot() +
     stat_density_ridges(aes(k, Species %>% as.numeric(), fill = Species),
                         colour = NA, n = 2^10, from = -8, to = 2,
-                        bandwidth = 10*0.02, scale = 2, alpha = 0.7) +
-    scale_fill_manual(values = c("#b6b12d", "#2b491e"), guide = "none") +
+                        bandwidth = 10*0.02, scale = 1.5, alpha = 0.7) +
+    scale_fill_manual(values = c("#a29400", "#004237"), guide = "none") +
     scale_x_log10(limits = c(10^-8, 10^2),
                   breaks = 10^(seq(-8, 2, 2)),
                   labels = scales::label_log(),
                   oob = scales::oob_keep) +
-    labs(x = expression("Decomposition (day"^-1*")")) +
+    labs(x = expression("Predicted decomposition (day"^-1*")")) +
     coord_cartesian(expand = F, clip = "off") +
     mytheme +
     theme(axis.title.y = element_blank(),
           axis.text.y = element_blank(),
           axis.ticks.y = element_blank(),
-          axis.line.y = element_blank())
+          axis.line.y = element_blank(),
+          plot.margin = margin(0.2, 0.5, 0.2, 0, unit = "cm"))
 
 Fig_1c # the 70% probability of kelp decomposition being
 # greater is not obvious. Visualise difference instead.
 
+# Add labels to PB_D_contrast
+PB_D_contrast %<>%
+  left_join(PB_D_contrast_summary %>%
+              select(Variable, P), 
+            by = "Variable") %>%
+  mutate(label_Kelps = ( P * 100 ) %>% str_c("%"),
+         label_Trees = ( (1 - P) * 100 ) %>% str_c("%")) %T>%
+  print()
+
 Fig_1c <- PB_D_contrast %>%
-  filter(Variable == "log_k") %>%
+  filter(Variable == "k") %>%
   ggplot() +
-    stat_density_ridges(aes(10^difference, 0, 
+    stat_density_ridges(aes(10^log_ratio, 0, 
                             fill = if_else(after_stat(x) < 10^0,
                                            "Trees", "Kelps")),
                         geom = "density_ridges_gradient",
                         colour = NA, n = 2^10, from = -4, to = 6,
                         bandwidth = 10*0.02, scale = 1) +
+    geom_textdensity(aes(x = 10^log_ratio, y = after_stat(density),
+                         label = label_Kelps),
+                     colour = "#a29400", family = "Futura",
+                     size = 3.5, hjust = 0.6, vjust = 0,
+                     n = 2^10, bw = 10*0.02, text_only = TRUE) +
+    geom_textdensity(aes(x = 10^log_ratio, y = after_stat(density), 
+                         label = label_Trees),
+                     colour = "#004237", family = "Futura",
+                     size = 3.5, hjust = 0.3, vjust = 0,
+                     n = 2^10, bw = 10*0.02, text_only = TRUE) +
     geom_vline(xintercept = 10^0) +
-    scale_fill_manual(values = c(alpha("#b6b12d", 0.7), alpha("#2b491e", 0.7)), 
+    scale_fill_manual(values = c("#a29400", "#004237"), 
                       guide = "none") +
     scale_x_log10(limits = c(10^-4, 10^6),
                   breaks = 10^(seq(-4, 6, 2)),
                   labels = scales::label_log(),
                   oob = scales::oob_keep) +
-    labs(x = "Relative decomposition") +
+    labs(x = "Predicted relative decomposition") +
     coord_cartesian(expand = F, clip = "off") +
     mytheme +
     theme(axis.title.y = element_blank(),
           axis.text.y = element_blank(),
           axis.ticks.y = element_blank(),
-          axis.line.y = element_blank())
+          axis.line.y = element_blank(),
+          plot.margin = margin(0.2, 0.5, 0.2, 0, unit = "cm"))
 
 Fig_1c
 

@@ -91,7 +91,7 @@ ratio_samples$summary() %>%
   summarise(rhat_1.001 = mean( rhat > 1.001 ),
             rhat_mean = mean(rhat),
             rhat_sd = sd(rhat))
-# No rhat above 1.001. rhat = 1.00 ± 0.0000825.
+# No rhat above 1.001. rhat = 1.00 ± 0.0000416.
 
 # Chains
 require(bayesplot)
@@ -187,6 +187,12 @@ ratio_prediction <- ratio_prior_posterior %>%
   group_by(Species, Fresh) %>% # Summarise prediction distributions
   mean_qi(mu, Dry, .width = c(.5, .8, .9)) %T>%
   print()
+
+# Save progress
+ratio_prior_posterior %>%
+  write_rds(here("Decomposition", "RDS", "ratio_prior_posterior.rds"))
+ratio_prediction %>%
+  write_rds(here("Decomposition", "RDS", "ratio_prediction.rds"))
 
 # 1.2.7 Figure S1 ####
 # Summarise parameters for annotation
@@ -1824,29 +1830,30 @@ Fig_2c <- contrast %>%
              Mass == "Fresh")) %>%
   ggplot() +
     stat_density_ridges(aes(log_ratio, y = 0, fill = Species),
-                        colour = NA, from = c(1, 0.4, 0), to = c(5, 1.2, 0.4),
+                        colour = NA, n = 2^10, from = c(1, 0.4, 0), to = c(5, 1.2, 0.4),
                         bandwidth = c(4*0.02, 0.8*0.02, 0.4*0.02)) +
     scale_fill_manual(values = c("#333b08", "#c3b300", "#4a7518"), guide = "none") +
     facet_wrap(~ Species, scales = "free") + # I am wrapping here so that densities are the same height
     facetted_pos_scales(
       x = list(
-        Species == "Laminaria digitata" ~ 
-          scale_x_continuous(limits = c(1, 5), 
-                             breaks = seq(1, 5, by = 1),
+        Species == "Laminaria digitata" ~
+          scale_x_continuous(limits = c(1, 5),
+                             breaks = seq(1, 5, 1),
+                             labels = scales::label_math(10^.x),
                              oob = scales::oob_keep),
-        Species == "Ecklonia radiata" ~ 
-          scale_x_continuous(limits = c(0.4, 1.2), 
-                             breaks = seq(0.4, 1.2, by = 0.2),
-                             labels = scales::label_number(accuracy = c(0.1 %>% rep(3), 1, 0.1)),
+        Species == "Ecklonia radiata" ~
+          scale_x_continuous(limits = c(0.4, 1.2),
+                             breaks = seq(0.4, 1.2, 0.2),
+                             labels = scales::label_math(10^.x),
                              oob = scales::oob_keep),
-        Species == "Amphibolis griffithii" ~ 
+        Species == "Amphibolis griffithii" ~
           scale_x_continuous(limits = c(0, 0.4),
-                             breaks = seq(0, 0.4, by = 0.1),
-                             labels = scales::label_number(accuracy = c(1, 0.1 %>% rep(4))),
+                             breaks = seq(0, 0.4, 0.1),
+                             labels = scales::label_math(10^.x),
                              oob = scales::oob_keep)
         )
       ) +
-    labs(x = expression("Relative exponential decay (log"[10]*" "*italic(k)["Dead"]*"/"*italic(k)["Live"]*")")) +
+    labs(x = expression("Relative exponential decay ("*italic(k)["Dead"]*"/"*italic(k)["Live"]*")")) +
     coord_cartesian(expand = F, clip = "off") +
     mytheme +
     theme(axis.title.y = element_blank(),
@@ -1966,7 +1973,7 @@ Fig_S3c <- contrast %>%
   filter(Mass == "Fresh") %>%
   ggplot() +
     stat_density_ridges(aes(log_ratio, y = 0, fill = Species),
-                        colour = NA, from = c(1, 0.3, -1), to = c(5, 1.1, 2),
+                        colour = NA, n = 2^10, from = c(1, 0.3, -1), to = c(5, 1.1, 2),
                         bandwidth = c(4*0.02, 0.8*0.02, 3*0.02)) +
     geom_vline(
       data = tibble(
@@ -1982,19 +1989,21 @@ Fig_S3c <- contrast %>%
         Species == "Laminaria digitata" ~ 
           scale_x_continuous(limits = c(1, 5), 
                              breaks = seq(1, 5, by = 1),
+                             labels = scales::label_math(10^.x),
                              oob = scales::oob_keep),
         Species == "Ecklonia radiata" ~ 
           scale_x_continuous(limits = c(0.3, 1.1), 
                              breaks = seq(0.3, 1.1, by = 0.2),
+                             labels = scales::label_math(10^.x),
                              oob = scales::oob_keep),
         Species == "Amphibolis griffithii" ~ 
           scale_x_continuous(limits = c(-1, 2),
                              breaks = seq(-1, 2, by = 1),
-                             labels = scales::label_number(style_negative = "minus"),
-                             oob = scales::oob_keep)
+                             labels = scales::label_math(10^.x), # scale_x_log10 + lable_log doesn't work
+                             oob = scales::oob_keep) # so need to replace hyphen with minus afterwards
         )
       ) +
-    labs(x = expression("Relative exponential decay (log"[10]*" "*italic(k)["Dead"]*"/"*italic(k)["Live"]*")")) +
+    labs(x = expression("Relative exponential decay ("*italic(k)["Dead"]*"/"*italic(k)["Live"]*")")) +
     coord_cartesian(expand = F, clip = "off") +
     mytheme +
     theme(axis.title.y = element_blank(),
