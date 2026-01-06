@@ -839,7 +839,7 @@ meta_parameters_global <- meta_prior_posterior_global %>%
   select(!starts_with(".")) %>%
   group_by(Condition) %>%
   summarise(
-    across( everything(), list(mean = mean, sd = sd) ),
+    across( everything(), list(mean = mean, sd = sd, median = median) ),
     n = n()
   ) %>%
   ungroup() %>%
@@ -855,7 +855,12 @@ meta_parameters_global <- meta_prior_posterior_global %>%
       mu_sd < 1e3 ~ signif(mu_sd, 3),
       TRUE ~ signif(mu_sd, 4)
     ),
-    mu = glue("{mu_mean_rounded} ± {mu_sd_rounded}"),
+    mu_median_rounded = case_when(
+      mu_median < 100 ~ signif(mu_median, 2), 
+      mu_median < 1e3 ~ signif(mu_median, 3),
+      TRUE ~ signif(mu_median, 4)
+    ),
+    mu = glue("{mu_mean_rounded} ± {mu_sd_rounded} ({mu_median_rounded})"),
     tau = glue("{signif(tau_mean*100, 2)} ± {signif(tau_sd*100, 2)}"),
     # Note standard deviations are not converted
     alpha_sigma_s = glue("{signif(alpha_sigma_s_mean, 2)} ± {signif(alpha_sigma_s_sd, 2)}"),
@@ -896,7 +901,7 @@ meta_parameters_global <- meta_prior_posterior_global %>%
     ),
     theta = glue("{theta_mean_rounded} ± {theta_sd_rounded}")
   ) %>%
-  select(!(contains("mean") | contains("sd"))) %T>%
+  select(!(contains("mean") | contains("sd") | contains("median"))) %T>%
   print()
 
 # Calculate species rounded values for supplementary table
@@ -905,7 +910,7 @@ meta_parameters_species <- meta_prior_posterior_species %>%
   filter(Species != "Prior") %>%
   group_by(Species, Condition) %>%
   summarise(
-    across( everything(), list(mean = mean, sd = sd) ),
+    across( everything(), list(mean = mean, sd = sd, median = median) ),
     n = n()
   ) %>%
   ungroup() %>%
@@ -921,10 +926,15 @@ meta_parameters_species <- meta_prior_posterior_species %>%
       mu_sd < 1e3 ~ signif(mu_sd, 3),
       TRUE ~ signif(mu_sd, 4)
     ),
-    mu = glue("{mu_mean_rounded} ± {mu_sd_rounded}"),
+    mu_median_rounded = case_when(
+      mu_median < 100 ~ signif(mu_median, 2), 
+      mu_median < 1e3 ~ signif(mu_median, 3),
+      TRUE ~ signif(mu_median, 4)
+    ),
+    mu = glue("{mu_mean_rounded} ± {mu_sd_rounded} ({mu_median_rounded})"),
     tau = glue("{signif(tau_mean*100, 2)} ± {signif(tau_sd*100, 2)}")
   ) %>%
-  select(!(contains("mean") | contains("sd"))) %T>%
+  select(!(contains("mean") | contains("sd") | contains("median"))) %T>%
   print()
 
 # Calculate experiment rounded values for text
@@ -933,7 +943,7 @@ meta_parameters_experiment <- meta_prior_posterior_experiment %>%
   filter(Species != "Prior") %>%
   group_by(Species, Experiment, Condition) %>%
   summarise(
-    across( everything(), list(mean = mean, sd = sd) ),
+    across( everything(), list(mean = mean, sd = sd, median = median) ),
     n = n()
   ) %>%
   ungroup() %>%
@@ -949,10 +959,15 @@ meta_parameters_experiment <- meta_prior_posterior_experiment %>%
       mu_sd < 1e3 ~ signif(mu_sd, 3),
       TRUE ~ signif(mu_sd, 4)
     ),
-    mu = glue("{mu_mean_rounded} ± {mu_sd_rounded}"),
+    mu_median_rounded = case_when(
+      mu_median < 100 ~ signif(mu_median, 2), 
+      mu_median < 1e3 ~ signif(mu_median, 3),
+      TRUE ~ signif(mu_median, 4)
+    ),
+    mu = glue("{mu_mean_rounded} ± {mu_sd_rounded} ({mu_median_rounded})"),
     tau = glue("{signif(tau_mean*100, 2)} ± {signif(tau_sd*100, 2)}")
   ) %>%
-  select(!(contains("mean") | contains("sd"))) %T>%
+  select(!(contains("mean") | contains("sd") | contains("median"))) %T>%
   print()
 
 # Calculate sigma contrasts
@@ -1664,7 +1679,7 @@ meta_k_parameters_global <- meta_k_prior_posterior_global %>%
   select(!starts_with(".")) %>%
   group_by(Condition) %>%
   summarise(
-    across( everything(), list(mean = mean, sd = sd) ),
+    across( everything(), list(mean = mean, sd = sd, median = median) ),
     n = n()
   ) %>%
   ungroup() %>%
@@ -1675,10 +1690,13 @@ meta_k_parameters_global <- meta_k_prior_posterior_global %>%
     k_sd_rounded = if_else(
       k_sd < 1, signif(k_sd*100, 2), signif(k_sd*100, 3)
     ),
-    k = glue("{k_mean_rounded} ± {k_sd_rounded}"),
+    k_median_rounded = if_else(
+      k_median < 1, signif(k_median*100, 2), signif(k_median*100, 3)
+    ),
+    k = glue("{k_mean_rounded} ± {k_sd_rounded} ({k_median_rounded})"),
     sigma = glue("{signif(sigma_mean, 2)} ± {signif(sigma_sd, 2)}")
   ) %>%
-  select(!(contains("mean") | contains("sd"))) %T>%
+  select(!(contains("mean") | contains("sd") | contains("median"))) %T>%
   print()
 
 # Calculate species rounded values for supplementary table
@@ -1687,7 +1705,7 @@ meta_k_parameters_species <- meta_k_prior_posterior_species %>%
   filter(Species != "Prior") %>%
   group_by(Species, Condition) %>%
   summarise(
-    across( everything(), list(mean = mean, sd = sd) ),
+    across( everything(), list(mean = mean, sd = sd, median = median) ),
     n = n()
   ) %>%
   ungroup() %>%
@@ -1698,9 +1716,12 @@ meta_k_parameters_species <- meta_k_prior_posterior_species %>%
     k_sd_rounded = if_else(
       k_sd < 1, signif(k_sd*100, 2), signif(k_sd*100, 3)
     ),
-    k = glue("{k_mean_rounded} ± {k_sd_rounded}")
+    k_median_rounded = if_else(
+      k_median < 1, signif(k_median*100, 2), signif(k_median*100, 3)
+    ),
+    k = glue("{k_mean_rounded} ± {k_sd_rounded} ({k_median_rounded})")
   ) %>%
-  select(!(contains("mean") | contains("sd"))) %T>%
+  select(!(contains("mean") | contains("sd") | contains("median"))) %T>%
   print()
 
 # Calculate experiment rounded values for text
@@ -1709,7 +1730,7 @@ meta_k_parameters_experiment <- meta_k_prior_posterior_experiment %>%
   filter(Species != "Prior") %>%
   group_by(Species, Experiment, Condition) %>%
   summarise(
-    across( everything(), list(mean = mean, sd = sd) ),
+    across( everything(), list(mean = mean, sd = sd, median = median) ),
     n = n()
   ) %>%
   ungroup() %>%
@@ -1720,9 +1741,12 @@ meta_k_parameters_experiment <- meta_k_prior_posterior_experiment %>%
     k_sd_rounded = if_else(
       k_sd < 1, signif(k_sd*100, 2), signif(k_sd*100, 3)
     ),
-    k = glue("{k_mean_rounded} ± {k_sd_rounded}")
+    k_median_rounded = if_else(
+      k_median < 1, signif(k_median*100, 2), signif(k_median*100, 3)
+    ),
+    k = glue("{k_mean_rounded} ± {k_sd_rounded} ({k_median_rounded})")
   ) %>%
-  select(!(contains("mean") | contains("sd"))) %T>%
+  select(!(contains("mean") | contains("sd") | contains("median"))) %T>%
   print(n = 185)
 
 # Calculate contrasts
@@ -1746,11 +1770,11 @@ meta_k_sigma <- meta_k_prior_posterior_global %>%
          log_ratio = log10(ratio)) %T>%
   print()
 
-# Summarise contrasts
+# Summarise
 meta_contrast_summary <- meta_contrast %>%
   select(!starts_with(".")) %>%
   summarise(
-    across( everything(), list(mean = mean, sd = sd) ),
+    across( everything(), list(mean = mean, sd = sd, median = median) ),
     n = n(),
     P = mean( difference > 0 ) %>% signif(2)
   ) %>%
@@ -1761,31 +1785,43 @@ meta_contrast_summary <- meta_contrast %>%
     Live_sd_rounded = if_else(
       Live_sd < 1, signif(Live_sd*100, 2), signif(Live_sd*100, 3)
     ),
-    Live = glue("{Live_mean_rounded} ± {Live_sd_rounded}"),
+    Live_median_rounded = if_else(
+      Live_median < 1, signif(Live_median*100, 2), signif(Live_median*100, 3)
+    ),
+    Live = glue("{Live_mean_rounded} ± {Live_sd_rounded} ({Live_median_rounded})"),
     Dead_mean_rounded = if_else(
       Dead_mean < 1, signif(Dead_mean*100, 2), signif(Dead_mean*100, 3)
     ),
     Dead_sd_rounded = if_else(
       Dead_sd < 1, signif(Dead_sd*100, 2), signif(Dead_sd*100, 3)
     ),
-    Dead = glue("{Dead_mean_rounded} ± {Dead_sd_rounded}"),
+    Dead_median_rounded = if_else(
+      Dead_median < 1, signif(Dead_median*100, 2), signif(Dead_median*100, 3)
+    ),
+    Dead = glue("{Dead_mean_rounded} ± {Dead_sd_rounded} ({Dead_median_rounded})"),
     difference_mean_rounded = if_else(
       difference_mean < 1, signif(difference_mean*100, 2), signif(difference_mean*100, 3)
     ),
     difference_sd_rounded = if_else(
       difference_sd < 1, signif(difference_sd*100, 2), signif(difference_sd*100, 3)
     ),
-    difference = glue("{difference_mean_rounded} ± {difference_sd_rounded}"),
+    difference_median_rounded = if_else(
+      difference_median < 1, signif(difference_median*100, 2), signif(difference_median*100, 3)
+    ),
+    difference = glue("{difference_mean_rounded} ± {difference_sd_rounded} ({difference_median_rounded})"),
     ratio_mean_rounded = if_else(
       ratio_mean < 100, signif(ratio_mean, 2), signif(ratio_mean, 3)
     ),
     ratio_sd_rounded = if_else(
       ratio_sd < 100, signif(ratio_sd, 2), signif(ratio_sd, 3)
     ),
-    ratio = glue("{ratio_mean_rounded} ± {ratio_sd_rounded}"),
+    ratio_median_rounded = if_else(
+      ratio_median < 100, signif(ratio_median, 2), signif(ratio_median, 3)
+    ),
+    ratio = glue("{ratio_mean_rounded} ± {ratio_sd_rounded} ({ratio_median_rounded})"),
     log_ratio = glue("{signif(log_ratio_mean, 2)} ± {signif(log_ratio_sd, 2)}")
   ) %>%
-  select(!(contains("mean") | contains("sd"))) %T>%
+  select(!(contains("mean") | contains("sd") | contains("median"))) %T>%
   print()
 
 meta_k_sigma_summary <- meta_k_sigma %>%
@@ -2018,11 +2054,11 @@ Fig_3a <- prediction %>%
     geom_hline(yintercept = c(0, 1)) +
     geom_point(data = deco %>% filter(Day != 0), 
                aes(Day, Ratio),
-               colour = "#7030a5", shape = 16, 
+               colour = "#a29400", shape = 16, 
                alpha = 0.05, size = 1.2) +
     geom_line(aes(Day, r_mu, group = Group, 
                   colour = Highlight, alpha = Highlight)) +
-    scale_colour_manual(values = c("#7030a5", "black"), guide = "none") +
+    scale_colour_manual(values = c("#a29400", "black"), guide = "none") +
     scale_alpha_manual(values = c(0.3, 1), guide = "none") +
     scale_y_continuous(breaks = seq(0, 2, 1)) +
     labs(x = "Detrital age (days)",
@@ -2054,7 +2090,7 @@ Fig_3b <- k_dens %>%
       family = "Futura", size = 12, size.unit = "pt",
       hjust = 0, vjust = 0
     ) +
-    scale_colour_manual(values = c("#7030a5", "black"), guide = "none") +
+    scale_colour_manual(values = c("#a29400", "black"), guide = "none") +
     scale_alpha_manual(values = c(0.3, 1), guide = "none") +
     scale_x_continuous(breaks = seq(0, 0.6, by = 0.2),
                        labels = scales::label_number(accuracy = c(1, 0.1 %>% rep(3)))) +
@@ -2072,8 +2108,49 @@ Fig_3b
 # Safely ignore warning, which is due to intentional NAs in geom_text.
 
 # 3.3.3 Figure 3c ####
+# Add labels to meta_contrast
+meta_contrast %<>%
+  mutate(label_Live = meta_contrast_summary %$% 
+           ( P * 100 ) %>% str_c("%"),
+         label_Dead = meta_contrast_summary %$%
+           ( (1 - P) * 100 ) %>% str_c("%")) %T>%
+  print()
+
 require(ggridges)
-Fig_3c <- meta_k_prior_posterior_global %>%
+require(geomtextpath)
+Fig_3c <- meta_contrast %>%
+  ggplot() +
+    stat_density_ridges(aes(ratio, 0), fill = "#a29400",
+                        colour = NA, n = 2^10, from = -2, to = 4,
+                        bandwidth = 6*0.02, scale = 1) +
+    geom_textdensity(aes(x = ratio, y = after_stat(density),
+                         label = label_Live),
+                     colour = "#a29400", family = "Futura",
+                     size = 3.5, hjust = 0.6, vjust = 0,
+                     n = 2^10, bw = 6*0.02, text_only = T) +
+    geom_textdensity(aes(x = ratio, y = after_stat(density),
+                         label = label_Dead),
+                     colour = "#a29400", family = "Futura",
+                     size = 3.5, hjust = 0.25, vjust = 0,
+                     n = 2^10, bw = 6*0.02, text_only = T) +
+    geom_vline(aes(xintercept = 10^0)) +
+    scale_x_log10(limits = c(10^-2, 10^4), 
+                  breaks = 10^(-2:4),
+                  labels = scales::label_log(),
+                  oob = scales::oob_keep) +
+    labs(x = expression("Relative exponential decay ("*italic(k)["Dead"]*"/"*italic(k)["Live"]*")")) +
+    coord_cartesian(expand = F, clip = "off") +
+    mytheme +
+    theme(axis.title.y = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.line.y = element_blank(),
+          strip.text = element_blank())
+
+Fig_3c
+
+# 3.3.4 Figure 3d ####
+Fig_3d <- meta_k_prior_posterior_global %>%
   filter(Condition != "Prior") %>%
   pivot_longer(cols = starts_with("log"),
                names_to = "Predictor",
@@ -2087,7 +2164,7 @@ Fig_3c <- meta_k_prior_posterior_global %>%
     log_k_variance = log_k_sigma^2
   ) %>%
   ggplot() +
-    stat_density_ridges(aes(log_k_sigma, y = Condition), fill = "#7030a5",
+    stat_density_ridges(aes(log_k_sigma, y = Condition), fill = "#a29400",
                         colour = NA, n = 2^10, from = 0, to = 2.4,
                         bandwidth = 2.4*0.02, scale = 2, alpha = 0.7) +
     geom_text(
@@ -2114,16 +2191,16 @@ Fig_3c <- meta_k_prior_posterior_global %>%
           axis.line.y = element_blank(),
           strip.text = element_blank())
 
-Fig_3c
+Fig_3d
 
 # 3.3.4 Combine panels ####
 require(patchwork)
-Fig_3 <- ( Fig_3a / Fig_3b / Fig_3c ) +
-  plot_layout(heights = c(1, 0.6, 0.235))
+Fig_3 <- ( Fig_3a / Fig_3b / Fig_3c / Fig_3d ) +
+  plot_layout(heights = c(1, 0.555, 0.1, 0.2))
 
 Fig_3 %>%
   ggsave(filename = "Fig_3.pdf", path = "Figures",
-         device = cairo_pdf, height = 18, width = 14, units = "cm")
+         device = cairo_pdf, height = 20, width = 14, units = "cm")
 
 # 4. Tables ####
 # 4.1 Table 1 ####
@@ -2248,3 +2325,373 @@ meta_experiment %>%
 read_docx() %>%
   body_add_table(value = meta_experiment) %>%
   print(target = here("Tables", "meta_experiment.docx"))
+
+# 5. Carbon sequestration ####
+# Filbee-Dexter et al. 2024 (doi: 10.1038/s41561-024-01449-7) use 
+# decomposition to calculate carbon sequestration by retention
+# below 200 m depth as a proportion of net primary production.
+# The equation is 0.71*exp(-k*CRT), 0.71 is the proportion of 
+# that is exported, k is the exponential decay constant per day 
+# and CRT is the coastal residence time in days. The 0.25, 0.5 
+# and 0.75 quantiles of CRT are given as 10, 75 and 441 days.
+# It's best to model the exported proportion and CRT which is
+# possible since the necessary data are provided in Supplementary 
+# Data 1 (https://www.nature.com/articles/s41561-024-01449-7#Sec13).
+
+# 5.1 Model export ####
+# 5.1.1 Prepare data ####
+export <- here("Decomposition", "Export.csv") %>% 
+  read_csv() %>% # NB provided units are incorrect but calculation is correct
+  mutate(Proportion = Total_detritus_g_C_m2_yr / Avg_ann_prod_kg_C_m2_y) %T>% 
+  print()
+
+export %$% mean(Proportion)
+
+export %>%
+  ggplot(aes(Proportion)) +
+    geom_density() +
+    theme_minimal()
+# Proportions of 1 or more are impossible.
+
+export %<>%
+  mutate(Proportion = if_else(Proportion < 1, Proportion, 0.9999)) %T>%
+  print()
+
+export %$% mean(Proportion)
+
+export %>%
+  ggplot(aes(Proportion)) +
+    geom_density() +
+    theme_minimal()
+
+# 5.1.2 Stan model ####
+# I am using the reported mean proportion of 0.71 as my prior.
+export_model <- here("Decomposition", "Stan", "export.stan") %>% 
+  read_file() %>%
+  write_stan_file() %>%
+  cmdstan_model()
+
+export_samples <- export_model$sample(
+          data = export %>%
+            select(Proportion) %>%
+            compose_data(),
+          chains = 8,
+          parallel_chains = parallel::detectCores(),
+          iter_warmup = 1e4,
+          iter_sampling = 1e4
+        ) %T>%
+  print(max_rows = 200)
+
+# 5.1.3 Model checks ####
+# Rhat
+export_samples$summary() %>%
+  summarise(rhat_1.001 = mean( rhat > 1.001 ),
+            rhat_mean = mean(rhat),
+            rhat_sd = sd(rhat))
+# No rhat above 1.001. rhat = 1.00 ± 0.0000393.
+
+# Chains
+export_samples$draws(format = "df") %>%
+  mcmc_rank_overlay()
+# Chains are good.
+
+# 5.1.4 Prior-posterior comparison ####
+export_prior <- prior_samples(
+  model = export_model,
+  data = export %>%
+    select(Proportion) %>%
+    compose_data()
+  )
+
+export_prior %>% 
+  prior_posterior_draws(
+    posterior_samples = export_samples,
+    parameters = c("mu", "nu"),
+    format = "long"
+    ) %>%
+  prior_posterior_plot()
+
+# 5.1.5 Prediction ####
+export_prior_posterior <- export_prior %>% 
+  prior_posterior_draws(
+    posterior_samples = export_samples,
+    parameters = c("mu", "nu"),
+    format = "short"
+  ) %>%
+  mutate(
+    Proportion = rbeta( n() , mu * nu , (1 - mu) * nu )
+  ) %>%
+  select(starts_with("."), distribution, Proportion) %T>%
+  print()
+
+# 5.2 Model coastal residence time ####
+# 5.2.1 Prepare data ####
+CRT <- here("Decomposition", "CRT.csv") %>% 
+  read_csv() %T>% 
+  print()
+
+CRT %>%
+  ggplot(aes(CRT)) +
+    geom_density() +
+    scale_x_log10() +
+    theme_minimal()
+# Fine but some NAs. Take care to remove.
+
+# 5.2.2 Stan model ####
+# I am using the reported median export time of 75 days as my prior.
+CRT_model <- here("Decomposition", "Stan", "CRT.stan") %>% 
+  read_file() %>%
+  write_stan_file() %>%
+  cmdstan_model()
+
+CRT_samples <- CRT_model$sample(
+          data = CRT %>%
+            select(CRT) %>%
+            drop_na() %>% # NB NAs have to be removed
+            compose_data(),
+          chains = 8,
+          parallel_chains = parallel::detectCores(),
+          iter_warmup = 1e4,
+          iter_sampling = 1e4
+        ) %T>%
+  print(max_rows = 200)
+
+# 5.2.3 Model checks ####
+# Rhat
+CRT_samples$summary() %>%
+  summarise(rhat_1.001 = mean( rhat > 1.001 ),
+            rhat_mean = mean(rhat),
+            rhat_sd = sd(rhat))
+# No rhat above 1.001. rhat = 1.00 ± 0.0000212.
+
+# Chains
+CRT_samples$draws(format = "df") %>%
+  mcmc_rank_overlay()
+# Chains are good.
+
+# 5.2.4 Prior-posterior comparison ####
+CRT_prior <- prior_samples(
+  model = CRT_model,
+  data = CRT %>%
+    select(CRT) %>%
+    drop_na() %>%
+    compose_data()
+  )
+
+CRT_prior %>% 
+  prior_posterior_draws(
+    posterior_samples = CRT_samples,
+    parameters = c("mu", "sigma"),
+    format = "long"
+    ) %>%
+  prior_posterior_plot()
+
+# 5.2.5 Prediction ####
+CRT_prior_posterior <- CRT_prior %>% 
+  prior_posterior_draws(
+    posterior_samples = CRT_samples,
+    parameters = c("mu", "sigma"),
+    format = "short"
+  ) %>%
+  mutate(
+    CRT = rlnorm( n() , mu , sigma )
+  ) %>%
+  select(starts_with("."), distribution, CRT) %T>%
+  print()
+
+# 5.3 Carbon sequestration potential ####
+# 5.3.1 Merge posteriors ####
+CSP <- meta_k_prior_posterior_global %>%
+  filter(Condition != "Prior") %>%
+  select(starts_with("."), Condition, k) %>%
+  full_join(
+    export_prior_posterior %>%
+      filter(distribution == "posterior") %>%
+      select(-distribution),
+    by = c(".chain", ".iteration", ".draw")
+  ) %>%
+  full_join(
+    CRT_prior_posterior %>%
+      filter(distribution == "posterior") %>%
+      select(-distribution),
+    by = c(".chain", ".iteration", ".draw")
+  ) %T>%
+  print()
+
+# 5.3.2 Prediction ####
+CSP %<>%
+  mutate(CSP = Proportion * exp( -k * CRT ),
+         # I am also calculating in log space because of underflow to 0
+         log_CSP = log(Proportion) -k * CRT) %>%
+  select(-c(k, Proportion, CRT)) %T>%
+  print()
+
+# Contrast
+CSP_contrast <- CSP %>%
+  select(-log_CSP) %>%
+  pivot_wider(names_from = Condition, values_from = CSP) %>%
+  mutate(difference = Live - Dead,
+         log_ratio = log10(Live / Dead)) %T>%
+  print()
+
+CSP_contrast %>%
+  count(is.finite(log_ratio))
+# Quite a lot of Infs or NaNs introduced. Calculate
+# log_ratio as difference of logs instead.
+
+CSP_contrast %<>%
+  select(-log_ratio) %>%
+  full_join(
+    CSP %>%
+      select(-CSP) %>%
+      pivot_wider(names_from = Condition, values_from = log_CSP) %>%
+      # Ratio as difference of natural logs, then converted to log10
+      mutate(log_ratio = (Live - Dead) / log(10)) %>%
+      select(starts_with("."), log_ratio),
+    by = c(".chain", ".iteration", ".draw")
+  ) %T>%
+  print()
+
+CSP_contrast %>%
+  count(is.finite(log_ratio))
+# All values are finite.
+
+# Summarise
+CSP_contrast_summary <- CSP_contrast %>%
+  select(!starts_with(".")) %>%
+  summarise(
+    across(
+      everything(), 
+      list(
+        mean = mean, sd = sd, median = median
+      )
+    ),
+    n = n(), # Calculate based on log_ratio rather than difference because 
+    # this avoids values that underflowed to 0
+    P = mean( log_ratio > 0 ) %>% signif(2)
+  ) %>%
+  mutate(
+    Live = glue(
+      "{signif(Live_mean, 2)} ± {signif(Live_sd, 2)} ({signif(Live_median, 2)})"
+    ),
+    Dead = glue(
+      "{signif(Dead_mean, 2)} ± {signif(Dead_sd, 2)} ({signif(Dead_median, 2)})"
+    ),
+    difference = glue(
+      "{signif(difference_mean, 2)} ± {signif(difference_sd, 2)} ({signif(difference_median, 2)})"
+    ),
+    log_ratio = glue(
+      "{signif(log_ratio_mean, 2)} ± {signif(log_ratio_sd, 4)} ({signif(log_ratio_median, 2)})"
+    )
+  ) %>%
+  select(!(contains("mean") | contains("sd") | contains("median"))) %T>%
+  print()
+# Filbee-Dexter et al. 2024 report average CSP as 15 ± 2 (3 to 38) %.
+# This is much closer to th median live estimate of 23% than the median
+# dead estimate of 0.00058%. The live estimate is over an order of magnitude
+# greater and there is an 86% chance that it is greater.
+
+# 5.4 Figure S4 ####
+# 5.4.1 Figure S4a ####
+Fig_S4a <- CSP %>%
+  mutate(Condition = Condition %>% fct_relevel("Dead")) %>%
+  ggplot() +
+    stat_density_ridges(aes(CSP, Condition), fill = "#a29400",
+                        colour = NA, n = 2^10, from = 0, to = 1,
+                        bandwidth = 1*0.02, scale = 0.9) +
+    scale_x_continuous(limits = c(0, 1),
+                       breaks = seq(0, 1, 0.2),
+                       labels = scales::label_number(accuracy = c(1, rep(0.1, 4), 1)),
+                       oob = scales::oob_keep) +
+    labs(x = "Proportion exported below 200 metres") +
+    coord_cartesian(expand = F, clip = "off") +
+    mytheme +
+    theme(axis.title.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.text.y = element_text(size = 12, vjust = 0, hjust = 0,
+                                     margin = margin(r = 10)),
+          axis.line.y = element_blank(),
+          plot.margin = margin(0.2, 0.5, 0.2, 0, unit = "cm"))
+
+Fig_S4a
+
+# 5.4.2 Figure S4b ####
+# Add labels to CSP_contrast
+CSP_contrast %<>%
+  mutate(label_Live = CSP_contrast_summary %$% 
+           ( P * 100 ) %>% str_c("%"),
+         label_Dead = CSP_contrast_summary %$%
+           ( (1 - P) * 100 ) %>% str_c("%")) %T>%
+  print()
+
+Fig_S4b <- CSP_contrast %>%
+  ggplot() +
+    stat_density_ridges(aes(difference, 0), fill = "#a29400",
+                        colour = NA, n = 2^10, from = -1, to = 1,
+                        bandwidth = 2*0.02, scale = 1) +
+    geom_textdensity(aes(x = difference, y = after_stat(density),
+                         label = label_Live),
+                     colour = "#a29400", family = "Futura",
+                     size = 3.5, hjust = 0.8, vjust = 0,
+                     n = 2^10, bw = 2*0.02, text_only = T) +
+    geom_textdensity(aes(x = difference, y = after_stat(density),
+                         label = label_Dead),
+                     colour = "#a29400", family = "Futura",
+                     size = 3.5, hjust = 0.4, vjust = 0,
+                     n = 2^10, bw = 2*0.02, text_only = T) +
+    geom_vline(aes(xintercept = 0)) +
+    scale_x_continuous(limits = c(-1, 1),
+                       breaks = seq(-1, 1, 0.5),
+                       labels = scales::label_number(accuracy = c(1, 0.1, 1, 0.1, 1),
+                                                     style_negative = "minus"),
+                       oob = scales::oob_keep) +
+    labs(x = "Difference (Live − Dead)") +
+    coord_cartesian(expand = F, clip = "off") +
+    mytheme +
+    theme(axis.title.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.text.y = element_blank(),
+          axis.line.y = element_blank(),
+          plot.margin = margin(0.2, 0.5, 0.2, 0, unit = "cm"))
+
+Fig_S4b
+
+# 5.4.3 Figure S4c ####
+Fig_S4c <- CSP_contrast %>%
+  ggplot() +
+    stat_density_ridges(aes(log_ratio, 0), fill = "#a29400",
+                        colour = NA, n = 2^10, from = -10, to = 10,
+                        bandwidth = 20*0.02, scale = 1) +
+    geom_textdensity(aes(x = log_ratio, y = after_stat(density),
+                         label = label_Live),
+                     colour = "#a29400", family = "Futura",
+                     size = 3.5, hjust = 0.8, vjust = 0,
+                     n = 2^10, bw = 20*0.02, text_only = T) +
+    geom_textdensity(aes(x = log_ratio, y = after_stat(density),
+                         label = label_Dead),
+                     colour = "#a29400", family = "Futura",
+                     size = 3.5, hjust = 0.4, vjust = 0,
+                     n = 2^10, bw = 20*0.02, text_only = T) +
+    geom_vline(aes(xintercept = 0)) +
+    scale_x_continuous(limits = c(-10, 10),
+                       breaks = seq(-10, 10, 5),
+                       labels = scales::label_math(10^.x), # have to fix minus
+                       oob = scales::oob_keep) +
+    labs(x = "Ratio (Live / Dead)") +
+    coord_cartesian(expand = F, clip = "off") +
+    mytheme +
+    theme(axis.title.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.text.y = element_blank(),
+          axis.line.y = element_blank(),
+          plot.margin = margin(0.2, 0.5, 0.2, 0, unit = "cm"))
+
+Fig_S4c
+
+# 5.4.4 Combine panels ####
+Fig_S4 <- ( Fig_S4a / Fig_S4b / Fig_S4c ) +
+  plot_layout(heights = c(1, 0.5, 0.5))
+
+Fig_S4 %>%
+  ggsave(filename = "Fig_S4.pdf", path = "Figures",
+         device = cairo_pdf, height = 15, width = 10, units = "cm")
