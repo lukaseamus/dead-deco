@@ -1261,9 +1261,9 @@ PB_kelp_forest_posterior <- PB_kelp_prior_posterior %>%
   print()
 
 # 6.2 Predict decomposition from turnover ####
-PB_D_posterior <- PB_prior_posterior_global %>%
-  filter(distribution == "posterior") %>%
-  select(!distribution) %>%
+PB_D_posterior <- PB_prior_posterior %>%
+  filter(Community == "Unobserved") %>%
+  select(!Community) %>%
   full_join(
     PB_kelp_forest_posterior,
     by = c(".chain", ".iteration", ".draw")
@@ -1271,22 +1271,24 @@ PB_D_posterior <- PB_prior_posterior_global %>%
   mutate(
     # Convert turnover rate (y^-1) to turnover time (d)
     Time = 1 / Turnover * 365,
-    log_Time = log10(Time),
-    log_Turnover = log10(Turnover),
     # Predict log10 P/B of detritus, i.e. decomposition, using relationship
-    log_Decomposition = rnorm( n() , alpha + beta * log_Turnover , sigma ),
+    log10_Deco = rnorm( n() , alpha + beta * log10(Turnover) , sigma ),
     # Convert decomposition back to original scale and convert y^-1 to d^-1
-    k = 10^log_Decomposition / 365,
-    t0.5 = log(2)/k,
-    log_k = log10(k),
-    log_t0.5 = log10(t0.5)
+    k = 10^log10_Deco / 365,
+    t0.5 = log(2)/k # Calculate half-life (days)
   ) %T>%
   print()
 
-# 6.3 Create summary table ####
+# 6.3 Create parameter summaries ####
 PB_D_parameters <- PB_D_posterior %>%
-  select(Species, Turnover, log_Turnover, Time, log_Time, 
-         k, log_k, t0.5, log_t0.5) %>%
+  select(Species, Turnover, Time, k, t0.5) %>%
+  mutate(
+    log_Turnover = log(Turnover),
+    log_Time = log(Time),
+    k = k * 100, # Convert k to %
+    log_k = log(k),
+    log_t0.5 = log(t0.5)
+  ) %>%
   group_by(Species) %>%
   summarise(
     across( starts_with("log"), list(mean = mean, sd = sd) ),
@@ -1314,7 +1316,7 @@ PB_D_parameters <- PB_D_posterior %>%
   print(n = 35)
 
 # 6.4 Contrasts ####
-PB_D_contrast <- PB_D_posterior %>%
+PB_D_contrast_rate <- PB_D_posterior %>%
   filter(Species %in% c("Kelps", "Trees")) %>%
   droplevels() %>%
   select(starts_with("."), Species, Turnover, k) %>%
@@ -1327,26 +1329,166 @@ PB_D_contrast <- PB_D_posterior %>%
          log_ratio = log10(ratio)) %T>%
   print()
 
+PB_D_contrast_time <- PB_D_posterior %>%
+  filter(Species %in% c("Kelps", "Trees")) %>%
+  droplevels() %>%
+  select(starts_with("."), Species, Time, t0.5) %>%
+  pivot_longer(cols = c(Time, t0.5),
+               names_to = "Variable") %>%
+  pivot_wider(names_from = Species,
+              values_from = value) %>%
+  mutate(difference = Trees - Kelps,
+         ratio = Trees / Kelps,
+         log_ratio = log10(ratio)) %T>%
+  print()
+
 # Summarise
-PB_D_contrast_summary <- PB_D_contrast %>%
+PB_D_contrast_rate_summary <- PB_D_contrast_rate %>%
+  mutate( # Note I am converting k to %
+    Kelps = if_else(Variable == "k", Kelps * 100, Kelps),
+    Trees = if_else(Variable == "k", Trees * 100, Trees),
+    difference = if_else(Variable == "k", difference * 100, difference)
+  ) %>%
   group_by(Variable) %>%
   summarise(
-    across( everything(), list(mean = mean, sd = sd) ),
+    across(
+      everything(), 
+      list(
+        median = median,
+        lower = ~qi(.x, 0.9)[1], 
+        upper = ~qi(.x, 0.9)[2],
+        mean = mean, sd = sd
+      )
+    ),
     P = mean( difference > 0 ) %>% signif(2),
     n = n()
   ) %>%
   ungroup() %>%
   mutate(
-    Kelps = glue("{signif(Kelps_mean, 2)} ± {signif(Kelps_sd, 2)}"),
-    Trees = glue("{signif(Trees_mean, 2)} ± {signif(Trees_sd, 2)}"),
-    difference = glue("{signif(difference_mean, 2)} ± {signif(difference_sd, 2)}"),
-    ratio = glue("{signif(ratio_mean, 2)} ± {signif(ratio_sd, 2)}"),
-    log_ratio = glue("{signif(log_ratio_mean, 2)} ± {signif(log_ratio_sd, 2)}")
+    Kelps = glue("{signif(Kelps_median, 2)} ({signif(Kelps_lower, 2)}–{signif(Kelps_upper, 2)})"),
+    Trees = glue("{signif(Trees_median, 2)} ({signif(Trees_lower, 2)}–{signif(Trees_upper, 2)})"),
+    difference = glue("{signif(difference_median, 2)} ({signif(difference_lower, 2)}–{signif(difference_upper, 2)})"),
+    ratio_median_rounded = case_when(
+      ratio_median < 100 ~ signif(ratio_median, 2),
+      ratio_median < 1e3 ~ signif(ratio_median, 3),
+      TRUE ~ signif(ratio_median, 4)
+    ),
+    ratio_lower_rounded = case_when(
+      ratio_lower < 100 ~ signif(ratio_lower, 2),
+      ratio_lower < 1e3 ~ signif(ratio_lower, 3),
+      TRUE ~ signif(ratio_lower, 4)
+    ),
+    ratio_upper_rounded = case_when(
+      ratio_upper < 100 ~ signif(ratio_upper, 2),
+      ratio_upper < 1e3 ~ signif(ratio_upper, 3),
+      TRUE ~ signif(ratio_upper, 4)
+    ),
+    ratio = glue("{ratio_median_rounded} ({ratio_lower_rounded}–{ratio_upper_rounded})"),
+    log_ratio = glue("{signif(log_ratio_median, 2)} ({signif(log_ratio_lower, 2)}–{signif(log_ratio_upper, 2)})"),
+    log_ratio_sym = glue("{signif(log_ratio_mean, 2)} ± {signif(log_ratio_sd, 2)}")
   ) %>%
-  select(!(contains("mean") | contains("sd"))) %T>%
+  select(!(contains("median") | contains("lower") | contains("upper") | 
+             contains("mean") | contains("sd"))) %T>%
   print()
-# Probabilities for turnover time and half-life are the exact complements
-# to probabilities for turnover and decomposition rate because these
+
+PB_D_contrast_time_summary <- PB_D_contrast_time %>%
+  group_by(Variable) %>%
+  summarise(
+    across(
+      everything(), 
+      list(
+        median = median,
+        lower = ~qi(.x, 0.9)[1], 
+        upper = ~qi(.x, 0.9)[2],
+        mean = mean, sd = sd
+      )
+    ),
+    P = mean( difference > 0 ) %>% signif(2),
+    n = n()
+  ) %>%
+  ungroup() %>%
+  mutate(
+    Kelps_median_rounded = case_when(
+      Kelps_median < 100 ~ signif(Kelps_median, 2),
+      Kelps_median < 1e3 ~ signif(Kelps_median, 3),
+      Kelps_median < 1e4 ~ signif(Kelps_median, 4),
+      TRUE ~ signif(Kelps_median, 5)
+    ),
+    Kelps_lower_rounded = case_when(
+      Kelps_lower < 100 ~ signif(Kelps_lower, 2),
+      Kelps_lower < 1e3 ~ signif(Kelps_lower, 3),
+      Kelps_lower < 1e4 ~ signif(Kelps_lower, 4),
+      TRUE ~ signif(Kelps_lower, 5)
+    ),
+    Kelps_upper_rounded = case_when(
+      Kelps_upper < 100 ~ signif(Kelps_upper, 2),
+      Kelps_upper < 1e3 ~ signif(Kelps_upper, 3),
+      Kelps_upper < 1e4 ~ signif(Kelps_upper, 4),
+      TRUE ~ signif(Kelps_upper, 5)
+    ),
+    Kelps = glue("{Kelps_median_rounded} ({Kelps_lower_rounded}–{Kelps_upper_rounded})"),
+    Trees_median_rounded = case_when(
+      Trees_median < 100 ~ signif(Trees_median, 2),
+      Trees_median < 1e3 ~ signif(Trees_median, 3),
+      Trees_median < 1e4 ~ signif(Trees_median, 4),
+      TRUE ~ signif(Trees_median, 5)
+    ),
+    Trees_lower_rounded = case_when(
+      Trees_lower < 100 ~ signif(Trees_lower, 2),
+      Trees_lower < 1e3 ~ signif(Trees_lower, 3),
+      Trees_lower < 1e4 ~ signif(Trees_lower, 4),
+      TRUE ~ signif(Trees_lower, 5)
+    ),
+    Trees_upper_rounded = case_when(
+      Trees_upper < 100 ~ signif(Trees_upper, 2),
+      Trees_upper < 1e3 ~ signif(Trees_upper, 3),
+      Trees_upper < 1e4 ~ signif(Trees_upper, 4),
+      TRUE ~ signif(Trees_upper, 5)
+    ),
+    Trees = glue("{Trees_median_rounded} ({Trees_lower_rounded}–{Trees_upper_rounded})"),
+    difference_median_rounded = case_when(
+      difference_median < 100 ~ signif(difference_median, 2),
+      difference_median < 1e3 ~ signif(difference_median, 3),
+      difference_median < 1e4 ~ signif(difference_median, 4),
+      TRUE ~ signif(difference_median, 5)
+    ),
+    difference_lower_rounded = case_when(
+      difference_lower < 100 ~ signif(difference_lower, 2),
+      difference_lower < 1e3 ~ signif(difference_lower, 3),
+      difference_lower < 1e4 ~ signif(difference_lower, 4),
+      TRUE ~ signif(difference_lower, 5)
+    ),
+    difference_upper_rounded = case_when(
+      difference_upper < 100 ~ signif(difference_upper, 2),
+      difference_upper < 1e3 ~ signif(difference_upper, 3),
+      difference_upper < 1e4 ~ signif(difference_upper, 4),
+      TRUE ~ signif(difference_upper, 5)
+    ),
+    difference = glue("{difference_median_rounded} ({difference_lower_rounded}–{difference_upper_rounded})"),
+    ratio_median_rounded = case_when(
+      ratio_median < 100 ~ signif(ratio_median, 2),
+      ratio_median < 1e3 ~ signif(ratio_median, 3),
+      TRUE ~ signif(ratio_median, 4)
+    ),
+    ratio_lower_rounded = case_when(
+      ratio_lower < 100 ~ signif(ratio_lower, 2),
+      ratio_lower < 1e3 ~ signif(ratio_lower, 3),
+      TRUE ~ signif(ratio_lower, 4)
+    ),
+    ratio_upper_rounded = case_when(
+      ratio_upper < 100 ~ signif(ratio_upper, 2),
+      ratio_upper < 1e3 ~ signif(ratio_upper, 3),
+      TRUE ~ signif(ratio_upper, 4)
+    ),
+    ratio = glue("{ratio_median_rounded} ({ratio_lower_rounded}–{ratio_upper_rounded})"),
+    log_ratio = glue("{signif(log_ratio_median, 2)} ({signif(log_ratio_lower, 2)}–{signif(log_ratio_upper, 2)})"),
+    log_ratio_sym = glue("{signif(log_ratio_mean, 2)} ± {signif(log_ratio_sd, 2)}")
+  ) %>%
+  select(!(contains("median") | contains("lower") | contains("upper") | 
+             contains("mean") | contains("sd"))) %T>%
+  print()
+# Probabilities for turnover time and half-life are the same as
+# probabilities for turnover and decomposition rate because these
 # posteriors are related via constants.
 
 # 6.5 Table S1 ####
@@ -1354,7 +1496,8 @@ Table_S1 <- PB_D_parameters %>%
   mutate(Species = Species %>% 
            fct_relevel(sort) %>%
            fct_relevel("Trees", "Kelps")) %>%
-  arrange(Species)
+  arrange(Species) %T>%
+  print()
 
 Table_S1 %>%
   write_csv(here("Tables", "Table_S1.csv"))
@@ -1364,8 +1507,21 @@ read_docx() %>%
   body_add_table(value = Table_S1) %>%
   print(target = here("Tables", "Table_S1.docx"))
 
-# 6.6 Figure 1 ####
-# 6.6.1 Merge data ####
+# 6.6 Table S2 ####
+Table_S2 <- PB_D_contrast_rate_summary %>%
+  bind_rows(PB_D_contrast_time_summary) %>%
+  select(Variable, Kelps, Trees, difference, log_ratio, log_ratio_sym, P) %T>%
+  print()
+
+Table_S2 %>%
+  write_csv(here("Tables", "Table_S2.csv"))
+
+read_docx() %>%
+  body_add_table(value = Table_S2) %>%
+  print(target = here("Tables", "Table_S2.docx"))
+
+# 6.7 Figure 1 ####
+# 6.7.1 Merge data ####
 PB_kelp_forest <- PB_kelp %>%
   mutate(Plant = "Kelps" %>% fct()) %>%
   bind_rows(
@@ -1374,7 +1530,7 @@ PB_kelp_forest <- PB_kelp %>%
   ) %T>%
   print()
 
-# 6.6.2 Define custom theme ####
+# 6.7.2 Define custom theme ####
 mytheme <- theme(panel.background = element_blank(),
                  panel.grid.major = element_blank(),
                  panel.grid.minor = element_blank(),
@@ -1402,7 +1558,7 @@ mytheme <- theme(panel.background = element_blank(),
                  panel.spacing.y = unit(0.6, "cm"),
                  text = element_text(family = "Futura"))
 
-# 6.6.3 Figure 1a ####
+# 6.7.3 Figure 1a ####
 require(ggridges)
 Fig_1a <- PB_D_posterior %>%
   filter(Species %in% c("Kelps", "Trees")) %>%
@@ -1436,7 +1592,7 @@ Fig_1a <- PB_D_posterior %>%
 
 Fig_1a
 
-# 6.6.3 Figure 1b ####
+# 6.7.3 Figure 1b ####
 PB_annotation <- PB_parameters %>%
   mutate(
     label_mu = glue(
@@ -1491,7 +1647,7 @@ Fig_1b <- PB_prediction %>%
 
 Fig_1b
 
-# 6.6.4 Figure 1c ####
+# 6.7.4 Figure 1c ####
 Fig_1c <- PB_D_posterior %>%
   filter(Species %in% c("Kelps", "Trees")) %>%
   droplevels() %>%
@@ -1562,7 +1718,7 @@ Fig_1c <- PB_D_contrast %>%
 
 Fig_1c
 
-# 6.6.5 Assemble panels ####
+# 6.7.5 Assemble panels ####
 require(patchwork)
 Fig_1 <- ( Fig_1a / Fig_1b / Fig_1c ) +
   plot_layout(heights = c(0.5, 1, 0.25))

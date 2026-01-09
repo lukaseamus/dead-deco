@@ -8,18 +8,18 @@ require(magrittr)
 require(here)
 
 # 3rd February 2025 was the start date of the experiment
-start <- dmy("3.2.25")
+start <- dmy_hm("3.2.25 13:00")
 
 sal <- here("Condition", "Salinity.csv") %>%
   read_csv() %>%
   mutate(Date = dmy(Date),
-         Day = start %--% Date / ddays()) %T>%
+         Day = start %>% as_date() %--% Date / ddays()) %T>%
   print()
 
 PAR <- here("Condition", "PAR.csv") %>%
   read_csv(col_types = list("f")) %>%
   mutate(Date = dmy(Date),
-         Day = start %--% Date / ddays()) %T>%
+         Day = start %>% as_date() %--% Date / ddays()) %T>%
   print()
 
 temp <- here("Condition", "Temperature") %>%
@@ -164,9 +164,10 @@ temp %>%
   summarise(mean = mean(Temperature),
             sd = sd(Temperature),
             median = median(Temperature),
+            max = max(Temperature),
             n = n())
-# mean    sd median     n
-# 23.8 0.818   23.8 62916
+# mean    sd median   max     n
+# 23.8 0.818   23.8  25.9 62916
 
 # Temperature per tank
 temp %>%
@@ -174,14 +175,30 @@ temp %>%
   summarise(mean = mean(Temperature),
             sd = sd(Temperature),
             median = median(Temperature),
+            max = max(Temperature),
             n = n())
-# Tank   mean    sd median     n
-# 1      23.8 0.818   23.8 20972
-# 2      23.9 0.817   23.8 20972
-# 3      23.8 0.820   23.8 20972
+# Tank   mean    sd median   max     n
+# 1      23.8 0.818   23.8  25.9 20972
+# 2      23.9 0.817   23.8  25.9 20972
+# 3      23.8 0.820   23.8  25.8 20972
 
 # Temperature at start and end
 end <- dmy("17.4.25") # end of experiment
+temp %>%
+  mutate(Date = Datetime %>% as_date()) %>%
+  # Temperature logging started after start
+  # of experiment so first day is used instead
+  filter(Date %in% c(min(Date), end)) %>%
+  group_by(Date) %>%
+  summarise(mean = mean(Temperature),
+            sd = sd(Temperature),
+            median = median(Temperature),
+            max = max(Temperature),
+            n = n())
+# Date        mean     sd median   max     n
+# 2025-02-04  25.5 0.0640   25.5  25.6   384
+# 2025-04-17  22.6 0.128    22.6  22.8   864
+
 temp %>%
   mutate(Date = Datetime %>% as_date()) %>%
   # Temperature logging started after start
@@ -191,14 +208,15 @@ temp %>%
   summarise(mean = mean(Temperature),
             sd = sd(Temperature),
             median = median(Temperature),
+            max = max(Temperature),
             n = n())
-# Tank  Date        mean     sd median     n
-# 1     2025-02-04  25.4 0.0524   25.5   128
-# 1     2025-04-17  22.6 0.124    22.7   288
-# 2     2025-02-04  25.5 0.0615   25.5   128
-# 2     2025-04-17  22.7 0.123    22.7   288
-# 3     2025-02-04  25.4 0.0532   25.5   128
-# 3     2025-04-17  22.6 0.122    22.6   288
+# Tank  Date        mean     sd median   max     n
+# 1     2025-02-04  25.4 0.0524   25.5  25.5   128
+# 1     2025-04-17  22.6 0.124    22.7  22.8   288
+# 2     2025-02-04  25.5 0.0615   25.5  25.6   128
+# 2     2025-04-17  22.7 0.123    22.7  22.8   288
+# 3     2025-02-04  25.4 0.0532   25.5  25.5   128
+# 3     2025-04-17  22.6 0.122    22.6  22.8   288
 
 # 3. Figure S2 ####
 # 3.1 Figure S2a ####

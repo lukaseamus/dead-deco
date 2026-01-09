@@ -31,10 +31,17 @@ deco <- here("Decomposition", "Decomposition_Meta.csv") %>%
 # 1.2 Check data ####
 deco %>% filter(Day != 0) %>% nrow() # 2093 observations
 
+deco %>% filter(Day != 0) %>% count(Condition) # 1983 vs. 110 observations
+
 deco %>%
   distinct(Reference, Location, Species, Treatment, 
            Condition) %>%
   nrow() # 185 experiments
+
+deco %>%
+  distinct(Reference, Location, Species, Treatment, 
+           Condition) %>%
+  count(Condition) # 177 vs. 8 experiments
 
 deco %>%
   count(Reference, Location, Species, Treatment, 
@@ -64,7 +71,7 @@ deco %>%
 # All seems to be in order
 
 # 2. Model data ####
-# 2.1 Optimal model ####
+# 2.1 Macroalgal model ####
 # 2.1.1 Visualise data ####
 deco %>%
   ggplot() +
@@ -832,143 +839,89 @@ rm(meta_c_model, meta_nc_model, meta_live_prior, meta_dead_prior,
    meta_live_prior_posterior_species, meta_dead_prior_posterior_species,
    meta_live_prior_posterior_experiment, meta_dead_prior_posterior_experiment)
 
-# Calculate global rounded values for text
+# Calculate global rounded values
 require(glue)
 meta_parameters_global <- meta_prior_posterior_global %>%
   filter(Condition != "Prior") %>%
   select(!starts_with(".")) %>%
+  mutate(
+    # Note I am converting exponential rates to %
+    alpha = alpha * 100,
+    tau = tau * 100,
+    # Calculate parameters on log scale
+    log_mu = log(mu),
+    log_tau = log(tau),
+    log_epsilon = log(epsilon),
+    log_lambda = log(lambda),
+    log_theta = log(theta)
+  ) %>%
   group_by(Condition) %>%
   summarise(
     across( everything(), list(mean = mean, sd = sd, median = median) ),
     n = n()
   ) %>%
   ungroup() %>%
-  mutate( # Note I am converting dimensionless rates to %
-    alpha = glue("{signif(alpha_mean*100, 2)} ± {signif(alpha_sd*100, 2)}"),
-    mu_mean_rounded = case_when(
-      mu_mean < 100 ~ signif(mu_mean, 2), 
-      mu_mean < 1e3 ~ signif(mu_mean, 3),
-      TRUE ~ signif(mu_mean, 4)
-    ),
-    mu_sd_rounded = case_when(
-      mu_sd < 100 ~ signif(mu_sd, 2), 
-      mu_sd < 1e3 ~ signif(mu_sd, 3),
-      TRUE ~ signif(mu_sd, 4)
-    ),
-    mu_median_rounded = case_when(
-      mu_median < 100 ~ signif(mu_median, 2), 
-      mu_median < 1e3 ~ signif(mu_median, 3),
-      TRUE ~ signif(mu_median, 4)
-    ),
-    mu = glue("{mu_mean_rounded} ± {mu_sd_rounded} ({mu_median_rounded})"),
-    tau = glue("{signif(tau_mean*100, 2)} ± {signif(tau_sd*100, 2)}"),
-    # Note standard deviations are not converted
-    alpha_sigma_s = glue("{signif(alpha_sigma_s_mean, 2)} ± {signif(alpha_sigma_s_sd, 2)}"),
-    alpha_sigma_e = glue("{signif(alpha_sigma_e_mean, 2)} ± {signif(alpha_sigma_e_sd, 2)}"),
-    log_mu_sigma_s = glue("{signif(log_mu_sigma_s_mean, 2)} ± {signif(log_mu_sigma_s_sd, 2)}"),
-    log_mu_sigma_e = glue("{signif(log_mu_sigma_e_mean, 2)} ± {signif(log_mu_sigma_e_sd, 2)}"),
-    log_tau_sigma_s = glue("{signif(log_tau_sigma_s_mean, 2)} ± {signif(log_tau_sigma_s_sd, 2)}"),
-    log_tau_sigma_e = glue("{signif(log_tau_sigma_e_mean, 2)} ± {signif(log_tau_sigma_e_sd, 2)}"),
-    epsilon_mean_rounded = case_when(
-      epsilon_mean < 100 ~ signif(epsilon_mean, 2), 
-      epsilon_mean < 1e3 ~ signif(epsilon_mean, 3),
-      epsilon_mean < 1e4 ~ signif(epsilon_mean, 4),
-      epsilon_mean < 1e5 ~ signif(epsilon_mean, 5),
-      TRUE ~ signif(epsilon_mean, 6)
-    ),
-    epsilon_sd_rounded = case_when(
-      epsilon_sd < 100 ~ signif(epsilon_sd, 2), 
-      epsilon_sd < 1e3 ~ signif(epsilon_sd, 3),
-      epsilon_sd < 1e4 ~ signif(epsilon_sd, 4),
-      epsilon_sd < 1e5 ~ signif(epsilon_sd, 5),
-      TRUE ~ signif(epsilon_sd, 6)
-    ),
-    epsilon = glue("{epsilon_mean_rounded} ± {epsilon_sd_rounded}"),
-    lambda = glue("{signif(lambda_mean, 2)} ± {signif(lambda_sd, 2)}"),
-    theta_mean_rounded = case_when(
-      theta_mean < 100 ~ signif(theta_mean, 2), 
-      theta_mean < 1e3 ~ signif(theta_mean, 3),
-      theta_mean < 1e4 ~ signif(theta_mean, 4),
-      theta_mean < 1e5 ~ signif(theta_mean, 5),
-      TRUE ~ signif(theta_mean, 6)
-    ),
-    theta_sd_rounded = case_when(
-      theta_sd < 100 ~ signif(theta_sd, 2), 
-      theta_sd < 1e3 ~ signif(theta_sd, 3),
-      theta_sd < 1e4 ~ signif(theta_sd, 4),
-      theta_sd < 1e5 ~ signif(theta_sd, 5),
-      TRUE ~ signif(theta_sd, 6)
-    ),
-    theta = glue("{theta_mean_rounded} ± {theta_sd_rounded}")
+  mutate(
+    alpha = glue("{signif(alpha_mean, 2)} ± {signif(alpha_sd, 2)}"),
+    mu = glue("{signif(mu_median, 2)} ({signif(log_mu_mean, 2)} ± {signif(log_mu_sd, 2)})"),
+    tau = glue("{signif(tau_median, 2)} ({signif(log_tau_mean, 2)} ± {signif(log_tau_sd, 2)})"),
+    # Only log scale for precision parameters
+    epsilon = glue("{signif(log_epsilon_mean, 2)} ± {signif(log_epsilon_sd, 2)}"),
+    lambda = glue("{signif(log_lambda_mean, 2)} ± {signif(log_lambda_sd, 2)}"),
+    theta = glue("{signif(log_theta_mean, 2)} ± {signif(log_theta_sd, 2)}")
   ) %>%
   select(!(contains("mean") | contains("sd") | contains("median"))) %T>%
   print()
 
-# Calculate species rounded values for supplementary table
+# Calculate species rounded values
 meta_parameters_species <- meta_prior_posterior_species %>%
   select(!starts_with(".")) %>%
   filter(Species != "Prior") %>%
+  mutate(
+    alpha = alpha * 100,
+    tau = tau * 100,
+    log_mu = log(mu),
+    log_tau = log(tau),
+  ) %>%
   group_by(Species, Condition) %>%
   summarise(
     across( everything(), list(mean = mean, sd = sd, median = median) ),
     n = n()
   ) %>%
   ungroup() %>%
-  mutate( # Note I am converting dimensionless rates to %
-    alpha = glue("{signif(alpha_mean*100, 2)} ± {signif(alpha_sd*100, 2)}"),
-    mu_mean_rounded = case_when(
-      mu_mean < 100 ~ signif(mu_mean, 2), 
-      mu_mean < 1e3 ~ signif(mu_mean, 3),
-      TRUE ~ signif(mu_mean, 4)
-    ),
-    mu_sd_rounded = case_when(
-      mu_sd < 100 ~ signif(mu_sd, 2), 
-      mu_sd < 1e3 ~ signif(mu_sd, 3),
-      TRUE ~ signif(mu_sd, 4)
-    ),
-    mu_median_rounded = case_when(
-      mu_median < 100 ~ signif(mu_median, 2), 
-      mu_median < 1e3 ~ signif(mu_median, 3),
-      TRUE ~ signif(mu_median, 4)
-    ),
-    mu = glue("{mu_mean_rounded} ± {mu_sd_rounded} ({mu_median_rounded})"),
-    tau = glue("{signif(tau_mean*100, 2)} ± {signif(tau_sd*100, 2)}")
+  mutate(
+    alpha = glue("{signif(alpha_mean, 2)} ± {signif(alpha_sd, 2)}"),
+    mu_median_rounded = if_else(mu_median < 100, signif(mu_median, 2), signif(mu_median, 3)),
+    mu = glue("{mu_median_rounded} ({signif(log_mu_mean, 2)} ± {signif(log_mu_sd, 2)})"),
+    tau = glue("{signif(tau_median, 2)} ({signif(log_tau_mean, 2)} ± {signif(log_tau_sd, 2)})")
   ) %>%
   select(!(contains("mean") | contains("sd") | contains("median"))) %T>%
   print()
 
-# Calculate experiment rounded values for text
+# Calculate experiment rounded values
 meta_parameters_experiment <- meta_prior_posterior_experiment %>%
   select(!starts_with(".")) %>%
   filter(Species != "Prior") %>%
+  mutate(
+    alpha = alpha * 100,
+    tau = tau * 100,
+    log_mu = log(mu),
+    log_tau = log(tau),
+  ) %>%
   group_by(Species, Experiment, Condition) %>%
   summarise(
     across( everything(), list(mean = mean, sd = sd, median = median) ),
     n = n()
   ) %>%
   ungroup() %>%
-  mutate( # Note I am converting dimensionless rates to %
-    alpha = glue("{signif(alpha_mean*100, 2)} ± {signif(alpha_sd*100, 2)}"),
-    mu_mean_rounded = case_when(
-      mu_mean < 100 ~ signif(mu_mean, 2), 
-      mu_mean < 1e3 ~ signif(mu_mean, 3),
-      TRUE ~ signif(mu_mean, 4)
-    ),
-    mu_sd_rounded = case_when(
-      mu_sd < 100 ~ signif(mu_sd, 2), 
-      mu_sd < 1e3 ~ signif(mu_sd, 3),
-      TRUE ~ signif(mu_sd, 4)
-    ),
-    mu_median_rounded = case_when(
-      mu_median < 100 ~ signif(mu_median, 2), 
-      mu_median < 1e3 ~ signif(mu_median, 3),
-      TRUE ~ signif(mu_median, 4)
-    ),
-    mu = glue("{mu_mean_rounded} ± {mu_sd_rounded} ({mu_median_rounded})"),
-    tau = glue("{signif(tau_mean*100, 2)} ± {signif(tau_sd*100, 2)}")
+  mutate(
+    alpha = glue("{signif(alpha_mean, 2)} ± {signif(alpha_sd, 2)}"),
+    mu_median_rounded = if_else(mu_median < 100, signif(mu_median, 2), signif(mu_median, 3)),
+    mu = glue("{mu_median_rounded} ({signif(log_mu_mean, 2)} ± {signif(log_mu_sd, 2)})"),
+    tau = glue("{signif(tau_median, 2)} ({signif(log_tau_mean, 2)} ± {signif(log_tau_sd, 2)})")
   ) %>%
   select(!(contains("mean") | contains("sd") | contains("median"))) %T>%
-  print()
+  print(n = 185)
 
 # Calculate sigma contrasts
 meta_sigma <- meta_prior_posterior_global %>%
@@ -1143,7 +1096,7 @@ meta_prediction_species_summary %>%
 meta_prediction_experiment_summary %>%
   write_rds(here("Decomposition", "RDS", "meta_prediction_experiment.rds"))
 
-# 2.2 Naive model ####
+# 2.2 Conventional model ####
 # 2.2.1 Prior simulation ####
 # The classic exponential decay model for proportions is e^-k*t.
 # I am again taking 0.1 d^-1 as my prior.
@@ -1677,23 +1630,21 @@ rm(meta_k_c_model, meta_k_nc_model, meta_live_prior, meta_dead_prior,
 meta_k_parameters_global <- meta_k_prior_posterior_global %>%
   filter(Condition != "Prior") %>%
   select(!starts_with(".")) %>%
+  mutate(
+    t0.5 = log(2) / k, # Calculate half-life (days)
+    k = k * 100, # Note I am converting k to % per day
+    log_k = log(k), # Calculate on log scale
+    log_t0.5 = log(t0.5)
+  ) %>%
   group_by(Condition) %>%
   summarise(
     across( everything(), list(mean = mean, sd = sd, median = median) ),
     n = n()
   ) %>%
   ungroup() %>%
-  mutate( # Note I am converting dimensionless rates to %
-    k_mean_rounded = if_else(
-      k_mean < 1, signif(k_mean*100, 2), signif(k_mean*100, 3)
-    ),
-    k_sd_rounded = if_else(
-      k_sd < 1, signif(k_sd*100, 2), signif(k_sd*100, 3)
-    ),
-    k_median_rounded = if_else(
-      k_median < 1, signif(k_median*100, 2), signif(k_median*100, 3)
-    ),
-    k = glue("{k_mean_rounded} ± {k_sd_rounded} ({k_median_rounded})"),
+  mutate(
+    k = glue("{signif(k_median, 2)} ({signif(log_k_mean, 2)} ± {signif(log_k_sd, 2)})"),
+    t0.5 = glue("{signif(t0.5_median, 2)} ({signif(log_t0.5_mean, 2)} ± {signif(log_t0.5_sd, 2)})"),
     sigma = glue("{signif(sigma_mean, 2)} ± {signif(sigma_sd, 2)}")
   ) %>%
   select(!(contains("mean") | contains("sd") | contains("median"))) %T>%
@@ -1703,23 +1654,22 @@ meta_k_parameters_global <- meta_k_prior_posterior_global %>%
 meta_k_parameters_species <- meta_k_prior_posterior_species %>%
   select(!starts_with(".")) %>%
   filter(Species != "Prior") %>%
+  mutate(
+    t0.5 = log(2) / k,
+    k = k * 100,
+    log_k = log(k),
+    log_t0.5 = log(t0.5)
+  ) %>%
   group_by(Species, Condition) %>%
   summarise(
     across( everything(), list(mean = mean, sd = sd, median = median) ),
     n = n()
   ) %>%
   ungroup() %>%
-  mutate( # Note I am converting dimensionless rates to %
-    k_mean_rounded = if_else(
-      k_mean < 1, signif(k_mean*100, 2), signif(k_mean*100, 3)
-    ),
-    k_sd_rounded = if_else(
-      k_sd < 1, signif(k_sd*100, 2), signif(k_sd*100, 3)
-    ),
-    k_median_rounded = if_else(
-      k_median < 1, signif(k_median*100, 2), signif(k_median*100, 3)
-    ),
-    k = glue("{k_mean_rounded} ± {k_sd_rounded} ({k_median_rounded})")
+  mutate(
+    k = glue("{signif(k_median, 2)} ({signif(log_k_mean, 2)} ± {signif(log_k_sd, 2)})"),
+    t0.5_median_rounded = if_else(t0.5_median < 100, signif(t0.5_median, 2), signif(t0.5_median, 3)),
+    t0.5 = glue("{t0.5_median_rounded} ({signif(log_t0.5_mean, 2)} ± {signif(log_t0.5_sd, 2)})"),
   ) %>%
   select(!(contains("mean") | contains("sd") | contains("median"))) %T>%
   print()
@@ -1728,34 +1678,48 @@ meta_k_parameters_species <- meta_k_prior_posterior_species %>%
 meta_k_parameters_experiment <- meta_k_prior_posterior_experiment %>%
   select(!starts_with(".")) %>%
   filter(Species != "Prior") %>%
+  mutate(
+    t0.5 = log(2) / k,
+    k = k * 100,
+    log_k = log(k),
+    log_t0.5 = log(t0.5)
+  ) %>%
   group_by(Species, Experiment, Condition) %>%
   summarise(
     across( everything(), list(mean = mean, sd = sd, median = median) ),
     n = n()
   ) %>%
   ungroup() %>%
-  mutate( # Note I am converting dimensionless rates to %
-    k_mean_rounded = if_else(
-      k_mean < 1, signif(k_mean*100, 2), signif(k_mean*100, 3)
+  mutate(
+    k = glue("{signif(k_median, 2)} ({signif(log_k_mean, 2)} ± {signif(log_k_sd, 2)})"),
+    t0.5_median_rounded = case_when(
+      t0.5_median < 100 ~ signif(t0.5_median, 2),
+      t0.5_median < 1e3 ~ signif(t0.5_median, 3),
+      t0.5_median < 1e4 ~ signif(t0.5_median, 4),
+      TRUE ~ signif(t0.5_median, 5)
     ),
-    k_sd_rounded = if_else(
-      k_sd < 1, signif(k_sd*100, 2), signif(k_sd*100, 3)
-    ),
-    k_median_rounded = if_else(
-      k_median < 1, signif(k_median*100, 2), signif(k_median*100, 3)
-    ),
-    k = glue("{k_mean_rounded} ± {k_sd_rounded} ({k_median_rounded})")
+    t0.5 = glue("{t0.5_median_rounded} ({signif(log_t0.5_mean, 2)} ± {signif(log_t0.5_sd, 2)})"),
   ) %>%
   select(!(contains("mean") | contains("sd") | contains("median"))) %T>%
   print(n = 185)
 
 # Calculate contrasts
-meta_contrast <- meta_k_prior_posterior_global %>%
+meta_contrast_k <- meta_k_prior_posterior_global %>%
   filter(Condition != "Prior") %>%
   select(!contains("sigma")) %>%
   pivot_wider(names_from = Condition, values_from = k) %>%
   mutate(difference = Dead - Live,
          ratio = Dead / Live,
+         log_ratio = log10(ratio)) %T>%
+  print()
+
+meta_contrast_t0.5 <- meta_k_prior_posterior_global %>%
+  filter(Condition != "Prior") %>%
+  mutate(t0.5 = log(2) / k) %>% # Calculate half-life (days)
+  select(!c(contains("sigma"), k)) %>%
+  pivot_wider(names_from = Condition, values_from = t0.5) %>%
+  mutate(difference = Live - Dead,
+         ratio = Live / Dead,
          log_ratio = log10(ratio)) %T>%
   print()
 
@@ -1771,57 +1735,58 @@ meta_k_sigma <- meta_k_prior_posterior_global %>%
   print()
 
 # Summarise
-meta_contrast_summary <- meta_contrast %>%
+meta_contrast_k_summary <- meta_contrast_k %>%
   select(!starts_with(".")) %>%
   summarise(
-    across( everything(), list(mean = mean, sd = sd, median = median) ),
+    across(
+      everything(), 
+      list(
+        median = median,
+        lower = ~qi(.x, 0.9)[1], 
+        upper = ~qi(.x, 0.9)[2],
+        mean = mean, sd = sd
+      )
+    ),
     n = n(),
     P = mean( difference > 0 ) %>% signif(2)
   ) %>%
-  mutate( # Note I am converting dimensionless rates to %
-    Live_mean_rounded = if_else(
-      Live_mean < 1, signif(Live_mean*100, 2), signif(Live_mean*100, 3)
-    ),
-    Live_sd_rounded = if_else(
-      Live_sd < 1, signif(Live_sd*100, 2), signif(Live_sd*100, 3)
-    ),
-    Live_median_rounded = if_else(
-      Live_median < 1, signif(Live_median*100, 2), signif(Live_median*100, 3)
-    ),
-    Live = glue("{Live_mean_rounded} ± {Live_sd_rounded} ({Live_median_rounded})"),
-    Dead_mean_rounded = if_else(
-      Dead_mean < 1, signif(Dead_mean*100, 2), signif(Dead_mean*100, 3)
-    ),
-    Dead_sd_rounded = if_else(
-      Dead_sd < 1, signif(Dead_sd*100, 2), signif(Dead_sd*100, 3)
-    ),
-    Dead_median_rounded = if_else(
-      Dead_median < 1, signif(Dead_median*100, 2), signif(Dead_median*100, 3)
-    ),
-    Dead = glue("{Dead_mean_rounded} ± {Dead_sd_rounded} ({Dead_median_rounded})"),
-    difference_mean_rounded = if_else(
-      difference_mean < 1, signif(difference_mean*100, 2), signif(difference_mean*100, 3)
-    ),
-    difference_sd_rounded = if_else(
-      difference_sd < 1, signif(difference_sd*100, 2), signif(difference_sd*100, 3)
-    ),
-    difference_median_rounded = if_else(
-      difference_median < 1, signif(difference_median*100, 2), signif(difference_median*100, 3)
-    ),
-    difference = glue("{difference_mean_rounded} ± {difference_sd_rounded} ({difference_median_rounded})"),
-    ratio_mean_rounded = if_else(
-      ratio_mean < 100, signif(ratio_mean, 2), signif(ratio_mean, 3)
-    ),
-    ratio_sd_rounded = if_else(
-      ratio_sd < 100, signif(ratio_sd, 2), signif(ratio_sd, 3)
-    ),
-    ratio_median_rounded = if_else(
-      ratio_median < 100, signif(ratio_median, 2), signif(ratio_median, 3)
-    ),
-    ratio = glue("{ratio_mean_rounded} ± {ratio_sd_rounded} ({ratio_median_rounded})"),
-    log_ratio = glue("{signif(log_ratio_mean, 2)} ± {signif(log_ratio_sd, 2)}")
+  mutate( # Note I am converting k to %
+    Live = glue("{signif(Live_median*100, 2)} ({signif(Live_lower*100, 2)}–{signif(Live_upper*100, 2)})"),
+    Dead = glue("{signif(Dead_median*100, 2)} ({signif(Dead_lower*100, 2)}–{signif(Dead_upper*100, 2)})"),
+    difference = glue("{signif(difference_median*100, 2)} ({signif(difference_lower*100, 2)}–{signif(difference_upper*100, 2)})"),
+    ratio = glue("{signif(ratio_median, 2)} ({signif(ratio_lower, 2)}–{signif(ratio_upper, 3)})"),
+    log_ratio = glue("{signif(log_ratio_median, 2)} ({signif(log_ratio_lower, 2)}–{signif(log_ratio_upper, 2)})"),
+    log_ratio_sym = glue("{signif(log_ratio_mean, 2)} ± {signif(log_ratio_sd, 2)}")
   ) %>%
-  select(!(contains("mean") | contains("sd") | contains("median"))) %T>%
+  select(!(contains("median") | contains("lower") | contains("upper") | 
+             contains("mean") | contains("sd"))) %T>%
+  print()
+
+meta_contrast_t0.5_summary <- meta_contrast_t0.5 %>%
+  select(!starts_with(".")) %>%
+  summarise(
+    across(
+      everything(), 
+      list(
+        median = median,
+        lower = ~qi(.x, 0.9)[1], 
+        upper = ~qi(.x, 0.9)[2],
+        mean = mean, sd = sd
+      )
+    ),
+    n = n(),
+    P = mean( difference > 0 ) %>% signif(2)
+  ) %>%
+  mutate(
+    Live = glue("{signif(Live_median, 2)} ({signif(Live_lower, 2)}–{signif(Live_upper, 3)})"),
+    Dead = glue("{signif(Dead_median, 2)} ({signif(Dead_lower, 2)}–{signif(Dead_upper, 2)})"),
+    difference = glue("{signif(difference_median, 2)} ({signif(difference_lower, 2)}–{signif(difference_upper, 3)})"),
+    ratio = glue("{signif(ratio_median, 2)} ({signif(ratio_lower, 2)}–{signif(ratio_upper, 3)})"),
+    log_ratio = glue("{signif(log_ratio_median, 2)} ({signif(log_ratio_lower, 2)}–{signif(log_ratio_upper, 2)})"),
+    log_ratio_sym = glue("{signif(log_ratio_mean, 2)} ± {signif(log_ratio_sd, 2)}")
+  ) %>%
+  select(!(contains("median") | contains("lower") | contains("upper") | 
+             contains("mean") | contains("sd"))) %T>%
   print()
 
 meta_k_sigma_summary <- meta_k_sigma %>%
@@ -1977,12 +1942,12 @@ prediction <- bind_rows(
   ) %T>%
   print()
 
-k <- bind_rows(
+posterior <- bind_rows(
     meta_k_prior_posterior_global %>%
       mutate(Predictor = "Species" %>% fct(),
              Group = "Global" %>% fct()) %>%
       select(!contains("sigma")),
-    meta_k_prior_posterior_global %>%
+    meta_k_prior_posterior_global %>% # Duplicate for experiments
       mutate(Predictor = "Experiments" %>% fct(),
              Group = "Global" %>% fct()) %>%
       select(!contains("sigma")),
@@ -1993,16 +1958,39 @@ k <- bind_rows(
       mutate(Predictor = "Experiments" %>% fct()) %>%
       rename(Group = Experiment) %>%
       select(!Species)
-  ) %T>%
+  ) %>%
+  mutate(t0.5 = log(2) / k) %T>% # Calculate half-life (days)
   print()
 
 # Calculate densities manually
-k_dens <- k %>%
+k_dens <- posterior %>%
   group_by(Predictor, Condition, Group) %>%
   reframe(x = c(0, density(k, n = 2^10, from = 0, to = 0.6, bw = 0.6 * 0.02)$x, 0.6),
           y = c(0, density(k, n = 2^10, from = 0, to = 0.6, bw = 0.6 * 0.02)$y, 0)) %>%
   group_by(Predictor, Condition, Group) %>% # Standardise area with Riemann sum (avoid manually added x[1]).
   mutate(y = y * 0.1 / ( sum(y) * ( x[3] - x[2] ) )) %>%
+  ungroup() %>%
+  mutate( # Make sure Species is the first panel
+    Predictor = Predictor %>% fct_relevel("Species"),
+    # Global needs to be highlighted in the plot
+    Highlight = Group == "Global"
+  ) %>%
+  group_by(Predictor) %>%
+  arrange(Highlight, .by_group = TRUE) %>%
+  ungroup() %>%
+  mutate( # A nested group is required for densities
+    Group_nested = str_c(Predictor, Condition, Group, sep = "_") %>%
+      fct_inorder() # This relevels according to specified arrange order
+  ) %T>%
+  print()
+
+t0.5_dens <- posterior %>%
+  group_by(Predictor, Condition, Group) %>%
+  # Logarithmic scale works better
+  reframe(x = c(-2, density(log10(t0.5), n = 2^10, from = -2, to = 6, bw = 8 * 0.02)$x, 6),
+          y = c(0, density(log10(t0.5), n = 2^10, from = -2, to = 6, bw = 8 * 0.02)$y, 0)) %>%
+  group_by(Predictor, Condition, Group) %>% # Standardise area with Riemann sum (avoid manually added x[1]).
+  mutate(y = y * 0.2 / ( sum(y) * ( x[3] - x[2] ) )) %>%
   ungroup() %>%
   mutate( # Make sure Species is the first panel
     Predictor = Predictor %>% fct_relevel("Species"),
@@ -2073,8 +2061,93 @@ Fig_3a <- prediction %>%
 
 Fig_3a
 
-# 3.3.2 Figure 3b ####
-Fig_3b <- k_dens %>%
+# 3.2.2 Figure 3b ####
+Fig_3b <- t0.5_dens %>%
+  filter(Condition != "Prior") %>%
+  ggplot() +
+    geom_line(aes(10^x, if_else(Condition == "Live", y + 0.5, y),
+                  group = Group_nested, alpha = Highlight,
+                  colour = Highlight)) +
+    geom_text(
+      data = tibble(
+        Predictor = c("Species", "Experiments") %>% rep(each = 2) %>% fct(),
+        y = c(0.5, 0) %>% rep(2),
+        label = c("Live", "Dead", NA %>% rep(2))
+      ),
+      aes(x = 10^-4.09, y = y, label = label),
+      family = "Futura", size = 12, size.unit = "pt",
+      hjust = 0, vjust = 0
+    ) +
+    scale_colour_manual(values = c("#a29400", "black"), guide = "none") +
+    scale_alpha_manual(values = c(0.3, 1), guide = "none") +
+    scale_x_log10(label = scales::label_log()) +
+    facet_grid(~ Predictor) +
+    labs(x = "Half-life (days)") +
+    coord_cartesian(xlim = c(10^-2, 10^6), expand = F, clip = "off") +
+    mytheme +
+    theme(axis.title.y = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.line.y = element_blank(),
+          strip.text = element_blank())
+
+Fig_3b
+# Safely ignore warning, which is due to intentional NAs in geom_text.
+
+# 3.2.3 Figure 3c ####
+# Add labels to meta_contrast
+meta_contrast_t0.5 %<>%
+  mutate(label_Live = meta_contrast_t0.5_summary %$% 
+           ( P * 100 ) %>% str_c("%"),
+         label_Dead = meta_contrast_t0.5_summary %$%
+           ( (1 - P) * 100 ) %>% str_c("%")) %T>%
+  print()
+
+require(ggridges)
+require(geomtextpath)
+Fig_3c <- meta_contrast_t0.5 %>%
+  ggplot() +
+    stat_density_ridges(aes(ratio, 0), fill = "#a29400",
+                        colour = NA, n = 2^10, from = -2, to = 4,
+                        bandwidth = 6*0.02, scale = 1) +
+    geom_textdensity(aes(x = ratio, y = after_stat(density),
+                         label = label_Live),
+                     colour = "#a29400", family = "Futura",
+                     size = 3.5, hjust = 0.6, vjust = 0,
+                     n = 2^10, bw = 6*0.02, text_only = T) +
+    geom_textdensity(aes(x = ratio, y = after_stat(density),
+                         label = label_Dead),
+                     colour = "#a29400", family = "Futura",
+                     size = 3.5, hjust = 0.25, vjust = 0,
+                     n = 2^10, bw = 6*0.02, text_only = T) +
+    geom_vline(aes(xintercept = 10^0)) +
+    scale_x_log10(limits = c(10^-2, 10^4), 
+                  breaks = 10^(-2:4),
+                  labels = scales::label_log(),
+                  oob = scales::oob_keep) +
+    labs(x = "Relative half-life (Live / Dead)") +
+    coord_cartesian(expand = F, clip = "off") +
+    mytheme +
+    theme(axis.title.y = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.line.y = element_blank(),
+          strip.text = element_blank())
+
+Fig_3c
+
+# 3.2.4 Combine panels ####
+require(patchwork)
+Fig_3 <- ( Fig_3a / Fig_3b / Fig_3c ) +
+  plot_layout(heights = c(1, 0.565, 0.1))
+
+Fig_3 %>%
+  ggsave(filename = "Fig_3.pdf", path = "Figures",
+         device = cairo_pdf, height = 17, width = 14, units = "cm")
+
+# 3.3 Figure S5 ####
+# 3.3.1 Figure S5a ####
+Fig_S5a <- k_dens %>%
   filter(Condition != "Prior") %>%
   ggplot() +
     geom_line(aes(x, if_else(Condition == "Live", y + 3.3, y),
@@ -2102,55 +2175,13 @@ Fig_3b <- k_dens %>%
           axis.text.y = element_blank(),
           axis.ticks.y = element_blank(),
           axis.line.y = element_blank(),
-          strip.text = element_blank())
+          plot.margin = margin(0, 0.5, 0.2, 1.5, unit = "cm"))
 
-Fig_3b
+Fig_S5a
 # Safely ignore warning, which is due to intentional NAs in geom_text.
 
-# 3.3.3 Figure 3c ####
-# Add labels to meta_contrast
-meta_contrast %<>%
-  mutate(label_Live = meta_contrast_summary %$% 
-           ( P * 100 ) %>% str_c("%"),
-         label_Dead = meta_contrast_summary %$%
-           ( (1 - P) * 100 ) %>% str_c("%")) %T>%
-  print()
-
-require(ggridges)
-require(geomtextpath)
-Fig_3c <- meta_contrast %>%
-  ggplot() +
-    stat_density_ridges(aes(ratio, 0), fill = "#a29400",
-                        colour = NA, n = 2^10, from = -2, to = 4,
-                        bandwidth = 6*0.02, scale = 1) +
-    geom_textdensity(aes(x = ratio, y = after_stat(density),
-                         label = label_Live),
-                     colour = "#a29400", family = "Futura",
-                     size = 3.5, hjust = 0.6, vjust = 0,
-                     n = 2^10, bw = 6*0.02, text_only = T) +
-    geom_textdensity(aes(x = ratio, y = after_stat(density),
-                         label = label_Dead),
-                     colour = "#a29400", family = "Futura",
-                     size = 3.5, hjust = 0.25, vjust = 0,
-                     n = 2^10, bw = 6*0.02, text_only = T) +
-    geom_vline(aes(xintercept = 10^0)) +
-    scale_x_log10(limits = c(10^-2, 10^4), 
-                  breaks = 10^(-2:4),
-                  labels = scales::label_log(),
-                  oob = scales::oob_keep) +
-    labs(x = expression("Relative exponential decay ("*italic(k)["Dead"]*"/"*italic(k)["Live"]*")")) +
-    coord_cartesian(expand = F, clip = "off") +
-    mytheme +
-    theme(axis.title.y = element_blank(),
-          axis.text.y = element_blank(),
-          axis.ticks.y = element_blank(),
-          axis.line.y = element_blank(),
-          strip.text = element_blank())
-
-Fig_3c
-
-# 3.3.4 Figure 3d ####
-Fig_3d <- meta_k_prior_posterior_global %>%
+# 3.3.2 Figure S5b ####
+Fig_S5b <- meta_k_prior_posterior_global %>%
   filter(Condition != "Prior") %>%
   pivot_longer(cols = starts_with("log"),
                names_to = "Predictor",
@@ -2189,24 +2220,24 @@ Fig_3d <- meta_k_prior_posterior_global %>%
           axis.text.y = element_blank(),
           axis.ticks.y = element_blank(),
           axis.line.y = element_blank(),
-          strip.text = element_blank())
+          strip.text = element_blank(),
+          plot.margin = margin(0.2, 0.5, 0.2, 1.5, unit = "cm"))
 
-Fig_3d
+Fig_S5b
 
-# 3.3.4 Combine panels ####
-require(patchwork)
-Fig_3 <- ( Fig_3a / Fig_3b / Fig_3c / Fig_3d ) +
-  plot_layout(heights = c(1, 0.555, 0.1, 0.2))
+# 3.3.3 Combine panels ####
+Fig_S5 <- ( Fig_S5a / Fig_S5b ) +
+  plot_layout(heights = c(1, 0.5))
 
-Fig_3 %>%
-  ggsave(filename = "Fig_3.pdf", path = "Figures",
-         device = cairo_pdf, height = 20, width = 14, units = "cm")
+Fig_S5 %>%
+  ggsave(filename = "Fig_S5.pdf", path = "Figures",
+         device = cairo_pdf, height = 12, width = 14, units = "cm")
 
 # 4. Tables ####
 # 4.1 Table 1 ####
-Table_1.2 <- meta_contrast_summary %>%
+Table_1.2 <- meta_contrast_t0.5_summary %>%
   mutate(Species = "Meta-analysis" %>% fct()) %>%
-  select(Species, Live, Dead, difference, log_ratio, P) %T>%
+  select(Species, Live, Dead, difference, log_ratio, log_ratio_sym, P) %T>%
   print()
 
 Table_1.2 %>%
@@ -2217,60 +2248,47 @@ read_docx() %>%
   body_add_table(value = Table_1.2) %>%
   print(target = here("Tables", "Table_1.2.docx"))
 
-# 4.2 Table S2 ####
-Table_S2.2 <- meta_k_parameters_global %>% 
-  select(Condition, k, sigma) %>%
-  left_join(
-    meta_parameters_global %>%
-      select(Condition, alpha, mu, tau, epsilon, lambda, theta),
-    by = "Condition"
-  ) %T>%
+Table_1.2_k <- meta_contrast_k_summary %>%
+  mutate(Species = "Meta-analysis" %>% fct()) %>%
+  select(Species, Live, Dead, difference, log_ratio, log_ratio_sym, P) %T>%
   print()
 
-Table_S2.2 %>%
-  write_csv(here("Tables", "Table_S2.2.csv"))
+Table_1.2_k %>%
+  write_csv(here("Tables", "Table_1.2_k.csv"))
 
 read_docx() %>%
-  body_add_table(value = Table_S2.2) %>%
-  print(target = here("Tables", "Table_S2.2.docx"))
+  body_add_table(value = Table_1.2_k) %>%
+  print(target = here("Tables", "Table_1.2_k.docx"))
 
-Table_S2.2_reduced <- meta_k_parameters_global %>% 
-  select(Condition, k) %>%
+# 4.2 Table S5 ####
+Table_S5 <- meta_k_parameters_global %>%
+  mutate(Species = "Unobserved kelps" %>% fct()) %>%
+  select(-sigma) %>%
+  bind_rows(meta_k_parameters_species) %>%
+  select(Species, Condition, k, t0.5) %>%
   left_join(
     meta_parameters_global %>%
-      select(Condition, alpha, mu, tau),
-    by = "Condition"
-  ) %T>%
-  print()
-
-Table_S2.2_reduced %>%
-  write_csv(here("Tables", "Table_S2.2_reduced.csv"))
-
-read_docx() %>%
-  body_add_table(value = Table_S2.2_reduced) %>%
-  print(target = here("Tables", "Table_S2.2_reduced.docx"))
-
-# 4.3 Table S4 ####
-Table_S4 <- meta_k_parameters_species %>% 
-  select(Species, Condition, k) %>%
-  left_join(
-    meta_parameters_species %>%
+      mutate(Species = "Unobserved kelps" %>% fct()) %>%
+      select(-c(epsilon, lambda, theta)) %>%
+      bind_rows(meta_parameters_species) %>%
       select(Species, Condition, alpha, mu, tau),
     by = c("Species", "Condition")
   ) %>%
-  mutate(Species = Species %>% fct_relevel(sort)) %>%
+  mutate(Species = Species %>% 
+           fct_relevel(sort) %>%
+           fct_relevel("Unobserved kelps")) %>%
   arrange(Species) %T>%
   print()
 
-Table_S4 %>%
-  write_csv(here("Tables", "Table_S4.csv"))
+Table_S5 %>%
+  write_csv(here("Tables", "Table_S5.csv"))
 
 read_docx() %>%
-  body_add_table(value = Table_S4) %>%
-  print(target = here("Tables", "Table_S4.docx"))
+  body_add_table(value = Table_S5) %>%
+  print(target = here("Tables", "Table_S5.docx"))
 
-# 4.4 Table S5 ####
-Table_S5 <- meta_k_sigma_summary %>% 
+# 4.3 Table S6 ####
+Table_S6 <- meta_k_sigma_summary %>% 
   bind_rows(meta_sigma_summary) %>%
   mutate(
     Predictor = if_else(
@@ -2285,31 +2303,16 @@ Table_S5 <- meta_k_sigma_summary %>%
   arrange(Parameter, Predictor) %T>%
   print()
 
-Table_S5 %>%
-  write_csv(here("Tables", "Table_S5.csv"))
+Table_S6 %>%
+  write_csv(here("Tables", "Table_S6.csv"))
 
 read_docx() %>%
-  body_add_table(value = Table_S5) %>%
-  print(target = here("Tables", "Table_S5.docx"))
+  body_add_table(value = Table_S6) %>%
+  print(target = here("Tables", "Table_S6.docx"))
 
 # 4.5 Extra data for text ####
-meta_global <- meta_parameters_global %>%
-  select(-n) %>%
-  pivot_longer(cols = -Condition,
-               names_to = "Parameter") %>%
-  pivot_wider(names_from = Condition,
-              values_from = value) %T>%
-  print()
-
-meta_global %>%
-  write_csv(here("Tables", "meta_global.csv"))
-
-read_docx() %>%
-  body_add_table(value = meta_global) %>%
-  print(target = here("Tables", "meta_global.docx"))
-
 meta_experiment <- meta_k_parameters_experiment %>% 
-  select(Experiment, Species, Condition, k) %>%
+  select(Experiment, Species, Condition, k, t0.5) %>%
   left_join(
     meta_parameters_experiment %>%
       select(Experiment, Species, Condition, alpha, mu, tau),
@@ -2499,7 +2502,7 @@ CRT_prior_posterior <- CRT_prior %>%
   select(starts_with("."), distribution, CRT) %T>%
   print()
 
-# 5.3 Carbon sequestration potential ####
+# 5.3 Estimate deep export ####
 # 5.3.1 Merge posteriors ####
 CSP <- meta_k_prior_posterior_global %>%
   filter(Condition != "Prior") %>%
@@ -2591,8 +2594,8 @@ CSP_contrast_summary <- CSP_contrast %>%
 # dead estimate of 0.00058%. The live estimate is over an order of magnitude
 # greater and there is an 86% chance that it is greater.
 
-# 5.4 Figure S4 ####
-# 5.4.1 Figure S4a ####
+# 5.4 Figure S6 ####
+# 5.4.1 Figure S6a ####
 Fig_S4a <- CSP %>%
   mutate(Condition = Condition %>% fct_relevel("Dead")) %>%
   ggplot() +
@@ -2615,7 +2618,7 @@ Fig_S4a <- CSP %>%
 
 Fig_S4a
 
-# 5.4.2 Figure S4b ####
+# 5.4.2 Figure S6b ####
 # Add labels to CSP_contrast
 CSP_contrast %<>%
   mutate(label_Live = CSP_contrast_summary %$% 
@@ -2656,7 +2659,7 @@ Fig_S4b <- CSP_contrast %>%
 
 Fig_S4b
 
-# 5.4.3 Figure S4c ####
+# 5.4.3 Figure S6c ####
 Fig_S4c <- CSP_contrast %>%
   ggplot() +
     stat_density_ridges(aes(log_ratio, 0), fill = "#a29400",

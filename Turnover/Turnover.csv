@@ -1,6 +1,6 @@
 ﻿Reference,DOI,Location,Species,Level,Turnover,Source,Notes
-John 1968 in Jupp & Drew 1974 ,10.1016/0022-0981(74)90044-6,"Pettico Wick, St Abbs, Scotland, United Kingdom",Laminaria hyperborea,Forest,0.7,Table 7,calculated as 2.1 kg organic dry mass m^−2 y^−1 (P) / 3 kg organic dry mass m^−2 (B)
-John 1968 in Jupp & Drew 1974 ,10.1016/0022-0981(74)90044-6,"Pettico Wick, St Abbs, Scotland, United Kingdom",Laminaria hyperborea,Forest,0.707692308,Table 7,calculated as 0.92 kg organic dry mass m^−2 y^−1 (P) / 1.3 kg organic dry mass m^−2 (B)
+John 1968 in Jupp & Drew 1974,10.1016/0022-0981(74)90044-6,"Pettico Wick, St Abbs, Scotland, United Kingdom",Laminaria hyperborea,Forest,0.7,Table 7,calculated as 2.1 kg organic dry mass m^−2 y^−1 (P) / 3 kg organic dry mass m^−2 (B)
+John 1968 in Jupp & Drew 1974,10.1016/0022-0981(74)90044-6,"Pettico Wick, St Abbs, Scotland, United Kingdom",Laminaria hyperborea,Forest,0.707692308,Table 7,calculated as 0.92 kg organic dry mass m^−2 y^−1 (P) / 1.3 kg organic dry mass m^−2 (B)
 Lüning 1969,10.1007/bf00360961,"Helgoland, Germany",Laminaria hyperborea,Forest,0.63963964,Text,calculated as 1.4 kg dry mass m^−2 y^−1 (P) / ( 11.1 kg fresh mass m^−2 * 1.4 kg dry mass / 7.1 kg fresh mass ) (B)
 Fuji & Kawamura 1970,10.2331/suisan.36.763,"Nishise Shoal, Hokkaido, Japan",Saccharina angustata,Forest,4.074240708,"Table 8, 9",calculated as annual sum of areal production / annual mean of areal biomass summed across age groups
 Yoshida 1970 in Kamohara et al. 2009,10.2331/suisan.75.1027,"Matsushima Bay, Miyagi, Japan",Eisenia bicyclis,Forest,1.70212766,Table 4,"calculated as 20 kg wet mass m^−2 y^−1 (P) / annual mean biomass calculated as mean of summer and winter, so assumes these to be annual maximum and minimum"
@@ -56,14 +56,6 @@ Dieckmann 1978,hdl.handle.net/11427/17787,"Oudekraal, Cape Town, South Africa",L
 Sheppard et al. 1978,10.1515/botm.1978.21.2.109,"Sark, Guernsey, Channel Islands",Laminaria hyperborea,Forest,0.638297872,"Text, Table 2",calculated as 15 t ha^−1 y^−1 * 1000 kg t^−1 / 10000 m^2 ha^−1 (P) / 2.35 kg m^−2 (B)
 Gerard & Mann 1979,10.1111/j.1529-8817.1979.tb02958.x,"Callahan Island, Shag Bay, Nova Scotia, Canada",Saccharina latissima,Forest,2.7,Text,
 Gerard & Mann 1979,10.1111/j.1529-8817.1979.tb02958.x,"Black Rock, Shag Bay, Nova Scotia, Canada",Saccharina latissima,Forest,1.6,Text,
-Lees et al. 1980,osti.gov/biblio/6158236,"Jakolof Bay, Alaska, USA",Agarum clathratum,Forest,2.05,Text,
-Lees et al. 1980,osti.gov/biblio/6158236,"Jakolof Bay, Alaska, USA",Agarum clathratum,Forest,2.48,Text,
-Lees et al. 1980,osti.gov/biblio/6158236,"Jakolof Bay, Alaska, USA",Saccharina latissima,Forest,3.21,Text,
-Lees et al. 1980,osti.gov/biblio/6158236,"Jakolof Bay, Alaska, USA",Saccharina latissima,Forest,3.27,Text,
-Lees et al. 1980,osti.gov/biblio/6158236,"Jakolof Bay, Alaska, USA",Saccharina latissima,Forest,3.2,Text,
-Lees et al. 1980,osti.gov/biblio/6158236,"Jakolof Bay, Alaska, USA",Saccharina latissima,Forest,3.82,Text,
-Lees et al. 1980,osti.gov/biblio/6158236,"Jakolof Bay, Alaska, USA",Nereocystis luetkeana,Forest,3,Text,
-Lees et al. 1980,osti.gov/biblio/6158236,"Jakolof Bay, Alaska, USA",Pleurophycus gardneri,Forest,3,Text,
 Newell et al. 1980,10.3354/meps002045,"Western Cape Peninsula, South Africa",Ecklonia maxima,Forest,4.1,Table 10,
 Newell et al. 1980,10.3354/meps002045,"Western Cape Peninsula, South Africa",Ecklonia maxima,Forest,3.8,Table 10,
 Chapman & Lindley 1981,10.1515/9783110865271-025,"Turton Bay, Igloolik Island, Nunavut, Canada",Laminaria solidungula,Thallus,0.72,Text,
@@ -86,6 +78,14 @@ Dunton & Schell 1986,10.3354/meps031057,"Stefansson Sound, Beaufort Sea, Alaska,
 Dunton & Schell 1986,10.3354/meps031057,"Stefansson Sound, Beaufort Sea, Alaska, USA",Laminaria solidungula,Thallus,0.8,Table 4,
 Larkum 1986,10.1016/0022-0981(86)90241-8,"Fairlight Bay, Port Jackson, Sydney, New South Wales, Australia",Ecklonia radiata,Forest,1.52658733,"Table 1, Text",calculated as 3.1 kg dry mass m^−2 y^−1 (P) / annual mean kg dry mass plant^−1 * 22.5 plants m^−2 (B)
 Larkum 1986,10.1016/0022-0981(86)90241-8,"Fairlight Bay, Port Jackson, Sydney, New South Wales, Australia",Ecklonia radiata,Lamina,2.120087588,Table 1,calculated as mean g dry mass plant^−1 d^−1 * 365 d y^−1 (P) / annual mean g dry mass lamina^−1 (B)
+Lees et al. 1986,osti.gov/biblio/6158236,"Jakolof Bay, Alaska, USA",Agarum clathratum,Forest,2.05,Text,
+Lees et al. 1986,osti.gov/biblio/6158236,"Jakolof Bay, Alaska, USA",Agarum clathratum,Forest,2.48,Text,
+Lees et al. 1986,osti.gov/biblio/6158236,"Jakolof Bay, Alaska, USA",Saccharina latissima,Forest,3.21,Text,
+Lees et al. 1986,osti.gov/biblio/6158236,"Jakolof Bay, Alaska, USA",Saccharina latissima,Forest,3.27,Text,
+Lees et al. 1986,osti.gov/biblio/6158236,"Jakolof Bay, Alaska, USA",Saccharina latissima,Forest,3.2,Text,
+Lees et al. 1986,osti.gov/biblio/6158236,"Jakolof Bay, Alaska, USA",Saccharina latissima,Forest,3.82,Text,
+Lees et al. 1986,osti.gov/biblio/6158236,"Jakolof Bay, Alaska, USA",Nereocystis luetkeana,Forest,3,Text,
+Lees et al. 1986,osti.gov/biblio/6158236,"Jakolof Bay, Alaska, USA",Pleurophycus gardneri,Forest,3,Text,
 Smith 1986,10.3354/meps033007,"Ram Island, Lobster Bay, Nova Scotia, Canada",Saccharina latissima,Thallus,4.5625,Table 3,"undisturbed, calculated as the relative growth rate (d^−1) * 365 d y^−1"
 Smith 1986,10.3354/meps033007,"Ram Island, Lobster Bay, Nova Scotia, Canada",Saccharina latissima,Thallus,0.8687,Table 3,"harvested, calculated as the relative growth rate (d^−1) * 365 d y^−1"
 Smith 1986,10.3354/meps033007,"Ram Island, Lobster Bay, Nova Scotia, Canada",Laminaria digitata,Thallus,1.387,Table 3,"undisturbed, calculated as the relative growth rate (d^−1) * 365 d y^−1"
@@ -93,10 +93,10 @@ Smith 1986,10.3354/meps033007,"Ram Island, Lobster Bay, Nova Scotia, Canada",Lam
 Wheeler & Druehl 1986,10.1007/bf00569125,"Grappler Inlet, Barkley Sound, Vancouver Island, British Columbia, Canada",Macrocystis pyrifera,Thallus,6.765627828,Figure 1,"calculated as mean maximum relative growth rate (d^−1) * 365 d y^−1, note that the most negative rate in the set was subtracted from all rates to ensure non-negativity before calculating the mean"
 Wheeler & Druehl 1986,10.1007/bf00569125,"Helby Island, Barkley Sound, Vancouver Island, British Columbia, Canada",Macrocystis pyrifera,Thallus,9.744628792,Figure 2,"calculated as mean maximum relative growth rate (d^−1) * 365 d y^−1, note that the most negative rate in the set was subtracted from all rates to ensure non-negativity before calculating the mean"
 Jackson 1987,10.1007/bf00393105,"La Jolla, San Diego, California, USA",Macrocystis pyrifera,Forest,13.31366387,Text,calculated as 1567 g C m^−2 y^−1 (P) / ( 537 g C m^−2 y^−1 / ( (0.003 + 0.022) / 2 d^−1 * 365 d y^−1 ) ) (B)
-Leigh et al. 1987,10.1073/pnas.84.5.1314,"Tatoosh Island, Washington, USA ",Postelsia palmiformis,Forest,1.978494624,Table 3,calculated as mean P / mean B
-Leigh et al. 1987,10.1073/pnas.84.5.1314,"Tatoosh Island, Washington, USA ",Hedophyllum sessile,Forest,1,Table 3,calculated as mean P / mean B
-Leigh et al. 1987,10.1073/pnas.84.5.1314,"Tatoosh Island, Washington, USA ",Lessoniopsis litoralis,Forest,1.802325581,Table 3,calculated as mean P / mean B
-Leigh et al. 1987,10.1073/pnas.84.5.1314,"Tatoosh Island, Washington, USA ",Laminaria setchellii,Forest,0.485148515,Table 3,calculated as mean P / mean B
+Leigh Jr. et al. 1987,10.1073/pnas.84.5.1314,"Tatoosh Island, Washington, USA ",Postelsia palmiformis,Forest,1.978494624,Table 3,calculated as mean P / mean B
+Leigh Jr. et al. 1987,10.1073/pnas.84.5.1314,"Tatoosh Island, Washington, USA ",Hedophyllum sessile,Forest,1,Table 3,calculated as mean P / mean B
+Leigh Jr. et al. 1987,10.1073/pnas.84.5.1314,"Tatoosh Island, Washington, USA ",Lessoniopsis litoralis,Forest,1.802325581,Table 3,calculated as mean P / mean B
+Leigh Jr. et al. 1987,10.1073/pnas.84.5.1314,"Tatoosh Island, Washington, USA ",Laminaria setchellii,Forest,0.485148515,Table 3,calculated as mean P / mean B
 Yokohama et al. 1987,10.1007/bf02488318,"Nabeta Bay, Izu Peninsula, Japan",Ecklonia cava,Forest,1.756068022,"Table 1, Text",calculated as 2.9 kg dry mass m^−2 y^−1 (P) / annual mean kg dry mass m^−2 (B)
 Smith 1988,10.1139/f88-066,"Lobster Bay, Nova Scotia, Canada",Saccharina latissima,Forest,3.4,Table 2,P:B reported as P:S
 Smith 1988,10.1139/f88-066,"Lobster Bay, Nova Scotia, Canada",Laminaria digitata,Forest,1.3,Table 2,P:B reported as P:S
