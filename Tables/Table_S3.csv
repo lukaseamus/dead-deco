@@ -1,4 +1,11 @@
-Species,Live,Dead,difference,log_ratio,P
-Laminaria digitata,0.052 ± 0.042,7.7 ± 0.78,7.7 ± 0.78,2.3 ± 0.42,1
-Ecklonia radiata,1.4 ± 0.29,6.5 ± 1.1,5.1 ± 1.1,0.68 ± 0.12,1
-Amphibolis griffithii,0.051 ± 0.039,0.12 ± 0.063,0.068 ± 0.072,0.43 ± 0.48,0.84
+Species,Mass,Treatment,k,t0.5,alpha,mu,tau
+Laminaria digitata,Fresh,Live,0.041 (-3.3 ± 0.96),1673 (7.6 ± 0.96),0.38 ± 0.17,87 (4.5 ± 0.31),2.4 (0.87 ± 0.36)
+Laminaria digitata,Fresh,Dead,7.7 (2 ± 0.1),9 (2.2 ± 0.1),-8.6 ± 0.92,83 (4.4 ± 0.47),11 (2.4 ± 0.11)
+Ecklonia radiata,Fresh,Live,1.3 (0.28 ± 0.21),52 (4 ± 0.21),-1.2 ± 0.31,72 (4.2 ± 0.5),3.9 (1.4 ± 0.23)
+Ecklonia radiata,Fresh,Dead,6.4 (1.9 ± 0.16),11 (2.4 ± 0.16),-7.5 ± 1.1,85 (4.4 ± 0.41),10 (2.3 ± 0.14)
+Ecklonia radiata,Dry,Live,1.7 (0.56 ± 0.16),40 (3.7 ± 0.16),-1.9 ± 0.58,76 (4.2 ± 0.59),4.4 (1.5 ± 0.22)
+Ecklonia radiata,Dry,Dead,11 (2.4 ± 0.13),6.5 (1.9 ± 0.13),-8.8 ± 1.4,91 (4.5 ± 0.46),11 (2.4 ± 0.15)
+Amphibolis griffithii,Fresh,Live,0.042 (-3.3 ± 0.91),1659 (7.5 ± 0.91),0.18 ± 0.093,91 (4.6 ± 0.29),2.5 (0.92 ± 0.33)
+Amphibolis griffithii,Fresh,Dead,0.11 (-2.3 ± 0.7),612 (6.5 ± 0.7),0.075 ± 0.11,86 (4.5 ± 0.28),2.7 (0.97 ± 0.32)
+Amphibolis griffithii,Dry,Live,0.98 (-0.022 ± 0.084),71 (4.3 ± 0.084),-0.86 ± 0.094,104 (4.7 ± 0.37),3.3 (1.2 ± 0.26)
+Amphibolis griffithii,Dry,Dead,1.5 (0.41 ± 0.092),46 (3.8 ± 0.092),-1.3 ± 0.11,111 (4.8 ± 0.39),3.7 (1.3 ± 0.23)

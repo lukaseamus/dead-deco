@@ -1,2 +1,2 @@
-Species,Live,Dead,difference,log_ratio,P
-Meta-analysis,13 ± 108 (2),24 ± 33 (17),11 ± 112 (12),0.91 ± 0.87,0.86
+Species,Live,Dead,difference,log_ratio,log_ratio_sym,P
+Meta-analysis,35 (1.7–656),4.2 (1.1–17),29 (-5.1–651),0.92 (-0.52–2.3),0.91 ± 0.87,0.86

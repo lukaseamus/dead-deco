@@ -363,7 +363,7 @@ deco_fresh <- decoau %>%
   print()
 
 # 2. Model data ####
-# 2.1 Dry mass optimal model ####
+# 2.1 Dry mass macroalgal model ####
 # 2.1.1 Visualisation ####
 ggplot() +
   geom_violin(data = deco_dry,
@@ -751,45 +751,38 @@ dry_prior_posterior %>%
   summarise(mean = mean(value), sd = sd(value), n = n()) %>%
   print(n = 36)
 
-# Calculate rounded values for supplementary table
+# Calculate rounded values
 dry_parameters <- dry_prior_posterior %>%
   select(!starts_with(".")) %>%
   filter(Treatment != "Prior") %>%
+  mutate(
+    # Note I am converting exponential rates to %
+    alpha = alpha * 100,
+    tau = tau * 100,
+    # Calculate parameters on log scale
+    log_mu = log(mu),
+    log_tau = log(tau),
+    log_epsilon = log(epsilon),
+    log_lambda = log(lambda),
+    log_theta = log(theta)
+  ) %>%
   group_by(Species, Treatment) %>%
   summarise(
-    across( everything(), list(mean = mean, sd = sd) ),
+    across( everything(), list(mean = mean, sd = sd, median = median) ),
     n = n()
   ) %>%
   ungroup() %>%
-  mutate( # Note I am converting dimensionless rates to %
-    alpha = glue("{signif(alpha_mean*100, 2)} ± {signif(alpha_sd*100, 2)}"),
-    mu_mean_rounded = case_when(
-      mu_mean < 100 ~ signif(mu_mean, 2), 
-      mu_mean < 1e3 ~ signif(mu_mean, 3)
-    ),
-    mu_sd_rounded = case_when(
-      mu_sd < 100 ~ signif(mu_sd, 2), 
-      mu_sd < 1e3 ~ signif(mu_sd, 3)
-    ),
-    mu = glue("{mu_mean_rounded} ± {mu_sd_rounded}"),
-    tau = glue("{signif(tau_mean*100, 2)} ± {signif(tau_sd*100, 2)}"),
-    epsilon = glue("{signif(epsilon_mean, 5)} ± {signif(epsilon_sd, 5)}"),
-    lambda = glue("{signif(lambda_mean, 2)} ± {signif(lambda_sd, 2)}"),
-    theta_mean_rounded = case_when(
-      theta_mean < 100 ~ signif(theta_mean, 2), 
-      theta_mean < 1e3 ~ signif(theta_mean, 3),
-      theta_mean < 1e4 ~ signif(theta_mean, 4),
-      TRUE ~ signif(theta_mean, 5)
-    ),
-    theta_sd_rounded = case_when(
-      theta_sd < 100 ~ signif(theta_sd, 2), 
-      theta_sd < 1e3 ~ signif(theta_sd, 3),
-      theta_sd < 1e4 ~ signif(theta_sd, 4),
-      TRUE ~ signif(theta_sd, 5)
-    ),
-    theta = glue("{theta_mean_rounded} ± {theta_sd_rounded}")
+  mutate(
+    alpha = glue("{signif(alpha_mean, 2)} ± {signif(alpha_sd, 2)}"),
+    mu_median_rounded = if_else(mu_median < 100, signif(mu_median, 2), signif(mu_median, 3)),
+    mu = glue("{mu_median_rounded} ({signif(log_mu_mean, 2)} ± {signif(log_mu_sd, 2)})"),
+    tau = glue("{signif(tau_median, 2)} ({signif(log_tau_mean, 2)} ± {signif(log_tau_sd, 2)})"),
+    # Only log scale for precision parameters
+    epsilon = glue("{signif(log_epsilon_mean, 2)} ± {signif(log_epsilon_sd, 2)}"),
+    lambda = glue("{signif(log_lambda_mean, 2)} ± {signif(log_lambda_sd, 2)}"),
+    theta = glue("{signif(log_theta_mean, 2)} ± {signif(log_theta_sd, 2)}")
   ) %>%
-  select(!(contains("mean") | contains("sd"))) %T>%
+  select(!(contains("mean") | contains("sd") | contains("median"))) %T>%
   print()
 
 # Predict across predictor range
@@ -830,7 +823,7 @@ rm(list = ls(pattern = "ratio"),
    dry_prior, dry_c_model, dry_c_samples,
    dry_nc_model, dry_nc_samples)
 
-# 2.2 Dry mass naive model ####
+# 2.2 Dry mass conventional model ####
 # 2.2.1 Prior simulation ####
 # The classic exponential decay model for proportions is e^-k*t.
 # I am again taking 0.06 d^-1, the mean k value for Ecklonia radiata 
@@ -1031,25 +1024,32 @@ dry_k_prior_posterior %>%
   summarise(mean = mean(value), sd = sd(value), n = n()) %>%
   print(n = 12)
 
-# Calculate rounded values for main table
+# Calculate rounded values
 dry_k_parameters <- dry_k_prior_posterior %>%
   select(!starts_with(".")) %>%
   filter(Treatment != "Prior") %>%
+  mutate(
+    t0.5 = log(2) / k, # Calculate half-life (days)
+    k = k * 100, # Note I am converting k to % per day
+    log_k = log(k), # Calculate on log scale
+    log_t0.5 = log(t0.5)
+  ) %>%
   group_by(Species, Treatment) %>%
   summarise(
-    across( everything(), list(mean = mean, sd = sd) ),
+    across( everything(), list(mean = mean, sd = sd, median = median) ),
     n = n()
   ) %>%
   ungroup() %>%
-  mutate( # Note I am converting dimensionless rates to %
-    k = glue("{signif(k_mean*100, 2)} ± {signif(k_sd*100, 2)}"),
+  mutate(
+    k = glue("{signif(k_median, 2)} ({signif(log_k_mean, 2)} ± {signif(log_k_sd, 2)})"),
+    t0.5 = glue("{signif(t0.5_median, 2)} ({signif(log_t0.5_mean, 2)} ± {signif(log_t0.5_sd, 2)})"),
     sigma = glue("{signif(sigma_mean, 2)} ± {signif(sigma_sd, 2)}")
   ) %>%
-  select(!(contains("mean") | contains("sd"))) %T>%
+  select(!(contains("mean") | contains("sd") | contains("median"))) %T>%
   print()
 
 # Calculate contrasts
-dry_contrast <- dry_k_prior_posterior %>%
+dry_contrast_k <- dry_k_prior_posterior %>%
   filter(Treatment != "Prior") %>%
   select(-sigma) %>%
   pivot_wider(names_from = Treatment, values_from = k) %>%
@@ -1058,24 +1058,73 @@ dry_contrast <- dry_k_prior_posterior %>%
          log_ratio = log10(ratio)) %T>%
   print()
 
-# Summarise contrasts for main table
-dry_contrast_summary <- dry_contrast %>%
+dry_contrast_t0.5 <- dry_k_prior_posterior %>%
+  filter(Treatment != "Prior") %>%
+  mutate(t0.5 = log(2) / k) %>% # Calculate half-life (days)
+  select(-c(k, sigma)) %>%
+  pivot_wider(names_from = Treatment, values_from = t0.5) %>%
+  mutate(difference = Live - Dead,
+         ratio = Live / Dead,
+         log_ratio = log10(ratio)) %T>%
+  print()
+
+# Summarise contrasts
+dry_contrast_k_summary <- dry_contrast_k %>%
   select(!starts_with(".")) %>%
   group_by(Species) %>%
   summarise(
-    across( everything(), list(mean = mean, sd = sd) ),
+    across(
+      everything(), 
+      list(
+        median = median,
+        lower = ~qi(.x, 0.9)[1], 
+        upper = ~qi(.x, 0.9)[2],
+        mean = mean, sd = sd
+      )
+    ),
     n = n(),
     P = mean( difference > 0 ) %>% signif(2)
   ) %>%
   ungroup() %>%
-  mutate( # Note I am converting dimensionless rates to %
-    Live = glue("{signif(Live_mean*100, 2)} ± {signif(Live_sd*100, 2)}"),
-    Dead = glue("{signif(Dead_mean*100, 2)} ± {signif(Dead_sd*100, 2)}"),
-    difference = glue("{signif(difference_mean*100, 2)} ± {signif(difference_sd*100, 2)}"),
-    ratio = glue("{signif(ratio_mean, 2)} ± {signif(ratio_sd, 2)}"),
-    log_ratio = glue("{signif(log_ratio_mean, 2)} ± {signif(log_ratio_sd, 2)}")
+  mutate( # Note I am converting k to %
+    Live = glue("{signif(Live_median*100, 2)} ({signif(Live_lower*100, 2)}–{signif(Live_upper*100, 2)})"),
+    Dead = glue("{signif(Dead_median*100, 2)} ({signif(Dead_lower*100, 2)}–{signif(Dead_upper*100, 2)})"),
+    difference = glue("{signif(difference_median*100, 2)} ({signif(difference_lower*100, 2)}–{signif(difference_upper*100, 2)})"),
+    ratio = glue("{signif(ratio_median, 2)} ({signif(ratio_lower, 2)}–{signif(ratio_upper, 2)})"),
+    log_ratio = glue("{signif(log_ratio_median, 2)} ({signif(log_ratio_lower, 2)}–{signif(log_ratio_upper, 2)})"),
+    log_ratio_sym = glue("{signif(log_ratio_mean, 2)} ± {signif(log_ratio_sd, 2)}")
   ) %>%
-  select(!(contains("mean") | contains("sd"))) %T>%
+  select(!(contains("median") | contains("lower") | contains("upper") | 
+             contains("mean") | contains("sd"))) %T>%
+  print()
+
+dry_contrast_t0.5_summary <- dry_contrast_t0.5 %>%
+  select(!starts_with(".")) %>%
+  group_by(Species) %>%
+  summarise(
+    across(
+      everything(), 
+      list(
+        median = median,
+        lower = ~qi(.x, 0.9)[1], 
+        upper = ~qi(.x, 0.9)[2],
+        mean = mean, sd = sd
+      )
+    ),
+    n = n(),
+    P = mean( difference > 0 ) %>% signif(2)
+  ) %>%
+  ungroup() %>%
+  mutate(
+    Live = glue("{signif(Live_median, 2)} ({signif(Live_lower, 2)}–{signif(Live_upper, 2)})"),
+    Dead = glue("{signif(Dead_median, 2)} ({signif(Dead_lower, 2)}–{signif(Dead_upper, 2)})"),
+    difference = glue("{signif(difference_median, 2)} ({signif(difference_lower, 2)}–{signif(difference_upper, 2)})"),
+    ratio = glue("{signif(ratio_median, 2)} ({signif(ratio_lower, 2)}–{signif(ratio_upper, 2)})"),
+    log_ratio = glue("{signif(log_ratio_median, 2)} ({signif(log_ratio_lower, 2)}–{signif(log_ratio_upper, 2)})"),
+    log_ratio_sym = glue("{signif(log_ratio_mean, 2)} ± {signif(log_ratio_sd, 2)}")
+  ) %>%
+  select(!(contains("median") | contains("lower") | contains("upper") | 
+             contains("mean") | contains("sd"))) %T>%
   print()
 
 # Predict across predictor range
@@ -1103,15 +1152,13 @@ dry_k_prediction <- dry_k_prior_posterior %>%
 # Save progress and clean up
 dry_k_prior_posterior %>%
   write_rds(here("Decomposition", "RDS", "dry_k_prior_posterior.rds"))
-dry_contrast %>%
-  write_rds(here("Decomposition", "RDS", "dry_contrast.rds"))
 dry_k_prediction %>%
   write_rds(here("Decomposition", "RDS", "dry_k_prediction.rds"))
 
 rm(dry_k_prior, dry_k_c_model, dry_k_c_samples,
    dry_k_nc_model, dry_k_nc_samples)
 
-# 2.3 Fresh mass optimal model ####
+# 2.3 Fresh mass macroalgal model ####
 # 2.3.1 Visualisation ####
 ggplot() +
   geom_point(data = deco_fresh,
@@ -1342,25 +1389,33 @@ fresh_prior_posterior %>%
 fresh_parameters <- fresh_prior_posterior %>%
   select(!starts_with(".")) %>%
   filter(Treatment != "Prior") %>%
+  mutate(
+    # Note I am converting exponential rates to %
+    alpha = alpha * 100,
+    tau = tau * 100,
+    # Calculate parameters on log scale
+    log_mu = log(mu),
+    log_tau = log(tau),
+    log_epsilon = log(epsilon),
+    log_lambda = log(lambda),
+    log_theta = log(theta)
+  ) %>%
   group_by(Species, Treatment) %>%
   summarise(
-    across( everything(), list(mean = mean, sd = sd) ),
+    across( everything(), list(mean = mean, sd = sd, median = median) ),
     n = n()
   ) %>%
   ungroup() %>%
-  mutate( # Note I am converting dimensionless rates to %
-    alpha = glue("{signif(alpha_mean*100, 2)} ± {signif(alpha_sd*100, 2)}"),
-    mu_mean_rounded = if_else(mu_mean < 100, signif(mu_mean, 2), signif(mu_mean, 3)),
-    mu_sd_rounded = if_else(mu_sd < 100, signif(mu_sd, 2), signif(mu_sd, 3)),
-    mu = glue("{mu_mean_rounded} ± {mu_sd_rounded}"),
-    tau = glue("{signif(tau_mean*100, 2)} ± {signif(tau_sd*100, 2)}"),
-    epsilon = glue("{signif(epsilon_mean, 5)} ± {signif(epsilon_sd, 5)}"),
-    lambda = glue("{signif(lambda_mean, 2)} ± {signif(lambda_sd, 2)}"),
-    theta_mean_rounded = if_else(theta_mean < 100, signif(theta_mean, 2), signif(theta_mean, 3)),
-    theta_sd_rounded = if_else(theta_sd < 100, signif(theta_sd, 2), signif(theta_sd, 3)),
-    theta = glue("{theta_mean_rounded} ± {theta_sd_rounded}")
+  mutate( # Note I am converting exponential rates to %
+    alpha = glue("{signif(alpha_mean, 2)} ± {signif(alpha_sd, 2)}"),
+    mu = glue("{signif(mu_median, 2)} ({signif(log_mu_mean, 2)} ± {signif(log_mu_sd, 2)})"),
+    tau = glue("{signif(tau_median, 2)} ({signif(log_tau_mean, 2)} ± {signif(log_tau_sd, 2)})"),
+    # Only log scale for precision parameters
+    epsilon = glue("{signif(log_epsilon_mean, 2)} ± {signif(log_epsilon_sd, 2)}"),
+    lambda = glue("{signif(log_lambda_mean, 2)} ± {signif(log_lambda_sd, 2)}"),
+    theta = glue("{signif(log_theta_mean, 2)} ± {signif(log_theta_sd, 2)}")
   ) %>%
-  select(!(contains("mean") | contains("sd"))) %T>%
+  select(!(contains("mean") | contains("sd") | contains("median"))) %T>%
   print()
 
 # Predict across predictor range
@@ -1400,7 +1455,7 @@ fresh_prediction %>%
 rm(fresh_prior, fresh_c_model, fresh_c_samples,
    fresh_nc_model, fresh_nc_samples)
 
-# 2.4 Fresh mass naive model ####
+# 2.4 Fresh mass conventional model ####
 # 2.4.1 Prior simulation ####
 # Same as 2.2.1
 
@@ -1587,25 +1642,38 @@ fresh_k_prior_posterior %>%
   summarise(mean = mean(value), sd = sd(value), n = n()) %>%
   print(n = 18)
 
-# Calculate rounded values for main table
+# Calculate rounded values
 fresh_k_parameters <- fresh_k_prior_posterior %>%
   select(!starts_with(".")) %>%
   filter(Treatment != "Prior") %>%
+  mutate(
+    t0.5 = log(2) / k, # Calculate half-life (days)
+    k = k * 100, # Note I am converting k to % per day
+    log_k = log(k), # Calculate on log scale
+    log_t0.5 = log(t0.5)
+  ) %>%
   group_by(Species, Treatment) %>%
   summarise(
-    across( everything(), list(mean = mean, sd = sd) ),
+    across( everything(), list(mean = mean, sd = sd, median = median) ),
     n = n()
   ) %>%
   ungroup() %>%
-  mutate( # Note I am converting dimensionless rates to %
-    k = glue("{signif(k_mean*100, 2)} ± {signif(k_sd*100, 2)}"),
+  mutate(
+    k = glue("{signif(k_median, 2)} ({signif(log_k_mean, 2)} ± {signif(log_k_sd, 2)})"),
+    t0.5_median_rounded = case_when(
+      t0.5_median < 100 ~ signif(t0.5_median, 2),
+      t0.5_median < 1e3 ~ signif(t0.5_median, 3),
+      t0.5_median < 1e4 ~ signif(t0.5_median, 4),
+      TRUE ~ signif(t0.5_median, 5)
+    ),
+    t0.5 = glue("{t0.5_median_rounded} ({signif(log_t0.5_mean, 2)} ± {signif(log_t0.5_sd, 2)})"),
     sigma = glue("{signif(sigma_mean, 2)} ± {signif(sigma_sd, 2)}")
   ) %>%
-  select(!(contains("mean") | contains("sd"))) %T>%
+  select(!(contains("mean") | contains("sd") | contains("median"))) %T>%
   print()
 
 # Calculate contrasts
-fresh_contrast <- fresh_k_prior_posterior %>%
+fresh_contrast_k <- fresh_k_prior_posterior %>%
   filter(Treatment != "Prior") %>%
   select(-sigma) %>%
   pivot_wider(names_from = Treatment, values_from = k) %>%
@@ -1614,34 +1682,160 @@ fresh_contrast <- fresh_k_prior_posterior %>%
          log_ratio = log10(ratio)) %T>%
   print()
 
-# Summarise contrasts for main table
-fresh_contrast_summary <- fresh_contrast %>%
+fresh_contrast_t0.5 <- fresh_k_prior_posterior %>%
+  filter(Treatment != "Prior") %>%
+  mutate(t0.5 = log(2) / k) %>% # Calculate half-life (days)
+  select(-c(k, sigma)) %>%
+  pivot_wider(names_from = Treatment, values_from = t0.5) %>%
+  mutate(difference = Live - Dead,
+         ratio = Live / Dead,
+         log_ratio = log10(ratio)) %T>%
+  print()
+
+# Summarise contrasts
+fresh_contrast_k_summary <- fresh_contrast_k %>%
   select(!starts_with(".")) %>%
   group_by(Species) %>%
   summarise(
-    across( everything(), list(mean = mean, sd = sd) ),
+    across(
+      everything(), 
+      list(
+        median = median,
+        lower = ~qi(.x, 0.9)[1], 
+        upper = ~qi(.x, 0.9)[2],
+        mean = mean, sd = sd
+      )
+    ),
     n = n(),
     P = mean( difference > 0 ) %>% signif(2)
   ) %>%
   ungroup() %>%
-  mutate( # Note I am converting dimensionless rates to %
-    Live = glue("{signif(Live_mean*100, 2)} ± {signif(Live_sd*100, 2)}"),
-    Dead = glue("{signif(Dead_mean*100, 2)} ± {signif(Dead_sd*100, 2)}"),
-    difference = glue("{signif(difference_mean*100, 2)} ± {signif(difference_sd*100, 2)}"),
-    ratio_mean_rounded = case_when(
-      ratio_mean < 100 ~ signif(ratio_mean, 2),
-      ratio_mean < 1e3 ~ signif(ratio_mean, 3),
-      TRUE ~ signif(ratio_mean, 4)
+  mutate( # Note I am converting k to %
+    Live = glue("{signif(Live_median*100, 2)} ({signif(Live_lower*100, 2)}–{signif(Live_upper*100, 2)})"),
+    Dead = glue("{signif(Dead_median*100, 2)} ({signif(Dead_lower*100, 2)}–{signif(Dead_upper*100, 2)})"),
+    difference = glue("{signif(difference_median*100, 2)} ({signif(difference_lower*100, 2)}–{signif(difference_upper*100, 2)})"),
+    ratio_median_rounded = case_when(
+      ratio_median < 100 ~ signif(ratio_median, 2),
+      ratio_median < 1e3 ~ signif(ratio_median, 3),
+      TRUE ~ signif(ratio_median, 4)
     ),
-    ratio_sd_rounded = case_when(
-      ratio_sd < 100 ~ signif(ratio_sd, 2),
-      ratio_sd < 1e3 ~ signif(ratio_sd, 3),
-      TRUE ~ signif(ratio_sd, 4)
+    ratio_lower_rounded = case_when(
+      ratio_lower < 100 ~ signif(ratio_lower, 2),
+      ratio_lower < 1e3 ~ signif(ratio_lower, 3),
+      TRUE ~ signif(ratio_lower, 4)
     ),
-    ratio = glue("{ratio_mean_rounded} ± {ratio_sd_rounded}"),
-    log_ratio = glue("{signif(log_ratio_mean, 2)} ± {signif(log_ratio_sd, 2)}")
+    ratio_upper_rounded = case_when(
+      ratio_upper < 100 ~ signif(ratio_upper, 2),
+      ratio_upper < 1e3 ~ signif(ratio_upper, 3),
+      TRUE ~ signif(ratio_upper, 4)
+    ),
+    ratio = glue("{ratio_median_rounded} ({ratio_lower_rounded}–{ratio_upper_rounded})"),
+    log_ratio = glue("{signif(log_ratio_median, 2)} ({signif(log_ratio_lower, 2)}–{signif(log_ratio_upper, 2)})"),
+    log_ratio_sym = glue("{signif(log_ratio_mean, 2)} ± {signif(log_ratio_sd, 2)}")
   ) %>%
-  select(!(contains("mean") | contains("sd"))) %T>%
+  select(!(contains("median") | contains("lower") | contains("upper") | 
+             contains("mean") | contains("sd"))) %T>%
+  print()
+
+fresh_contrast_t0.5_summary <- fresh_contrast_t0.5 %>%
+  select(!starts_with(".")) %>%
+  group_by(Species) %>%
+  summarise(
+    across(
+      everything(), 
+      list(
+        median = median,
+        lower = ~qi(.x, 0.9)[1], 
+        upper = ~qi(.x, 0.9)[2],
+        mean = mean, sd = sd
+      )
+    ),
+    n = n(),
+    P = mean( difference > 0 ) %>% signif(2)
+  ) %>%
+  ungroup() %>%
+  mutate(
+    Live_median_rounded = case_when(
+      Live_median < 100 ~ signif(Live_median, 2),
+      Live_median < 1e3 ~ signif(Live_median, 3),
+      Live_median < 1e4 ~ signif(Live_median, 4),
+      TRUE ~ signif(Live_median, 5)
+    ),
+    Live_lower_rounded = case_when(
+      Live_lower < 100 ~ signif(Live_lower, 2),
+      Live_lower < 1e3 ~ signif(Live_lower, 3),
+      Live_lower < 1e4 ~ signif(Live_lower, 4),
+      TRUE ~ signif(Live_lower, 5)
+    ),
+    Live_upper_rounded = case_when(
+      Live_upper < 100 ~ signif(Live_upper, 2),
+      Live_upper < 1e3 ~ signif(Live_upper, 3),
+      Live_upper < 1e4 ~ signif(Live_upper, 4),
+      TRUE ~ signif(Live_upper, 5)
+    ),
+    Live = glue("{Live_median_rounded} ({Live_lower_rounded}–{Live_upper_rounded})"),
+    Dead_median_rounded = case_when(
+      Dead_median < 100 ~ signif(Dead_median, 2),
+      Dead_median < 1e3 ~ signif(Dead_median, 3),
+      Dead_median < 1e4 ~ signif(Dead_median, 4),
+      TRUE ~ signif(Dead_median, 5)
+    ),
+    Dead_lower_rounded = case_when(
+      Dead_lower < 100 ~ signif(Dead_lower, 2),
+      Dead_lower < 1e3 ~ signif(Dead_lower, 3),
+      Dead_lower < 1e4 ~ signif(Dead_lower, 4),
+      TRUE ~ signif(Dead_lower, 5)
+    ),
+    Dead_upper_rounded = case_when(
+      Dead_upper < 100 ~ signif(Dead_upper, 2),
+      Dead_upper < 1e3 ~ signif(Dead_upper, 3),
+      Dead_upper < 1e4 ~ signif(Dead_upper, 4),
+      TRUE ~ signif(Dead_upper, 5)
+    ),
+    Dead = glue("{Dead_median_rounded} ({Dead_lower_rounded}–{Dead_upper_rounded})"),
+    difference_median_rounded = case_when(
+      difference_median < 100 ~ signif(difference_median, 2),
+      difference_median < 1e3 ~ signif(difference_median, 3),
+      difference_median < 1e4 ~ signif(difference_median, 4),
+      TRUE ~ signif(difference_median, 5)
+    ),
+    difference_lower_rounded = case_when(
+      difference_lower < 100 ~ signif(difference_lower, 2),
+      difference_lower < 1e3 ~ signif(difference_lower, 3),
+      difference_lower < 1e4 ~ signif(difference_lower, 4),
+      TRUE ~ signif(difference_lower, 5)
+    ),
+    difference_upper_rounded = case_when(
+      difference_upper < 100 ~ signif(difference_upper, 2),
+      difference_upper < 1e3 ~ signif(difference_upper, 3),
+      difference_upper < 1e4 ~ signif(difference_upper, 4),
+      TRUE ~ signif(difference_upper, 5)
+    ),
+    difference = glue("{difference_median_rounded} ({difference_lower_rounded}–{difference_upper_rounded})"),
+    ratio_median_rounded = case_when(
+      ratio_median < 100 ~ signif(ratio_median, 2),
+      ratio_median < 1e3 ~ signif(ratio_median, 3),
+      ratio_median < 1e4 ~ signif(ratio_median, 4),
+      TRUE ~ signif(ratio_median, 5)
+    ),
+    ratio_lower_rounded = case_when(
+      ratio_lower < 100 ~ signif(ratio_lower, 2),
+      ratio_lower < 1e3 ~ signif(ratio_lower, 3),
+      ratio_lower < 1e4 ~ signif(ratio_lower, 4),
+      TRUE ~ signif(ratio_lower, 5)
+    ),
+    ratio_upper_rounded = case_when(
+      ratio_upper < 100 ~ signif(ratio_upper, 2),
+      ratio_upper < 1e3 ~ signif(ratio_upper, 3),
+      ratio_upper < 1e4 ~ signif(ratio_upper, 4),
+      TRUE ~ signif(ratio_upper, 5)
+    ),
+    ratio = glue("{ratio_median_rounded} ({ratio_lower_rounded}–{ratio_upper_rounded})"),
+    log_ratio = glue("{signif(log_ratio_median, 2)} ({signif(log_ratio_lower, 2)}–{signif(log_ratio_upper, 2)})"),
+    log_ratio_sym = glue("{signif(log_ratio_mean, 2)} ± {signif(log_ratio_sd, 2)}")
+  ) %>%
+  select(!(contains("median") | contains("lower") | contains("upper") | 
+             contains("mean") | contains("sd"))) %T>%
   print()
 
 # Predict across predictor range
@@ -1669,8 +1863,6 @@ fresh_k_prediction <- fresh_k_prior_posterior %>%
 # Save progress and clean up
 fresh_k_prior_posterior %>%
   write_rds(here("Decomposition", "RDS", "fresh_k_prior_posterior.rds"))
-fresh_contrast %>%
-  write_rds(here("Decomposition", "RDS", "fresh_contrast.rds"))
 fresh_k_prediction %>%
   write_rds(here("Decomposition", "RDS", "fresh_k_prediction.rds"))
 
@@ -1687,21 +1879,32 @@ prediction <- dry_prediction %>%
            fct_relevel("Laminaria digitata", "Ecklonia radiata")) %T>%
   print()
 
-contrast <- dry_contrast %>%
+contrast_k <- dry_contrast_k %>%
   mutate(Mass = "Dry" %>% fct()) %>%
-  bind_rows(fresh_contrast %>%
+  bind_rows(fresh_contrast_k %>%
               mutate(Mass = "Fresh" %>% fct())) %>%
   mutate(Species = Species %>% 
            fct_relevel("Laminaria digitata", "Ecklonia radiata")) %T>%
   print()
 
-k <- dry_k_prior_posterior %>%
+contrast_t0.5 <- dry_contrast_t0.5 %>%
+  mutate(Mass = "Dry" %>% fct()) %>%
+  bind_rows(fresh_contrast_t0.5 %>%
+              mutate(Mass = "Fresh" %>% fct())) %>%
+  mutate(Species = Species %>% 
+           fct_relevel("Laminaria digitata", "Ecklonia radiata")) %T>%
+  print()
+
+posterior <- dry_k_prior_posterior %>%
   mutate(Mass = "Dry" %>% fct()) %>%
   bind_rows(fresh_k_prior_posterior %>%
               mutate(Mass = "Fresh" %>% fct())) %>%
-  mutate(Species = Species %>% 
-           fct_relevel("Laminaria digitata", "Ecklonia radiata"),
-         Treatment = Treatment %>% fct_relevel("Dead")) %T>%
+  mutate(
+    Species = Species %>% 
+      fct_relevel("Laminaria digitata", "Ecklonia radiata"),
+    Treatment = Treatment %>% fct_relevel("Dead"),
+    t0.5 = log(2) / k # Calculate half-life (days)
+  ) %T>%
   print()
 
 # 3.2 Combine data ####
@@ -1755,31 +1958,26 @@ Fig_2a
 # deviation for geom_pointrange.
 
 # 3.3.2 Figure 2b ####
-k %>%
+require(ggridges)
+Fig_2b <- posterior %>%
   filter(
     Treatment != "Prior" & 
       !(Species %in% c("Ecklonia radiata", "Amphibolis griffithii") & Mass == "Fresh")
   ) %>%
-  group_by(Species, Treatment) %>%
-  summarise(mean = mean(k), max = qi(k, 0.99)[2])
-
-require(ggridges)
-Fig_2b <- k %>%
-  filter(
-    Treatment != "Prior" & 
-      !(Species %in% c("Ecklonia radiata", "Amphibolis griffithii") & Mass == "Fresh")
+  mutate( # Laminaria digitata half-life is best visualised on the log scale
+    t0.5 = if_else(Species == "Laminaria digitata", log10(t0.5), t0.5)
   ) %>%
   ggplot() +
-    stat_density_ridges(aes(k, y = Treatment, fill = Species), 
-                        colour = NA, n = 2^10, from = rep(0, 3), to = c(0.12, 0.18, 0.03), 
-                        scale = 2, bandwidth = c(0.12*0.02, 0.18*0.02, 0.03*0.02)) +
+    stat_density_ridges(aes(t0.5, y = Treatment, fill = Species), 
+                        colour = NA, n = 2^10, from = rep(0, 3), to = c(6, 80, 120),
+                        scale = 2, bandwidth = c(6*0.02, 80*0.02, 120*0.02)) +
     geom_text(
       data = tibble(
-        Species = k %$% levels(Species) %>% rep(each = 2) %>% fct(),
+        Species = posterior %$% levels(Species) %>% rep(each = 2) %>% fct(),
         Treatment = c("Live", "Dead") %>% rep(3) %>% fct(),
         label = c("Live", "Dead", NA %>% rep(4))
       ),
-      aes(x = -0.0313 %>% rep(6), y = Treatment, label = label),
+      aes(x = -1.565, y = Treatment, label = label),
       family = "Futura", size = 12, size.unit = "pt",
       hjust = 0, vjust = 0
     ) +
@@ -1787,24 +1985,22 @@ Fig_2b <- k %>%
     facet_grid(~ Species, scales = "free") +
     facetted_pos_scales(
       x = list(
-        Species == "Laminaria digitata" ~ 
-          scale_x_continuous(limits = c(0, 0.12), 
-                             breaks = seq(0, 0.12, by = 0.04),
-                             labels = scales::label_number(accuracy = c(1, 0.01 %>% rep(3))),
+        Species == "Laminaria digitata" ~
+          scale_x_continuous(limits = c(0, 6),
+                             breaks = seq(0, 6, by = 2),
+                             labels = scales::label_math(10^.x),
                              oob = scales::oob_keep),
-        Species == "Ecklonia radiata" ~ 
-          scale_x_continuous(limits = c(0, 0.18), 
-                             breaks = seq(0, 0.18, by = 0.06),
-                             labels = scales::label_number(accuracy = c(1, 0.01 %>% rep(3))),
+        Species == "Ecklonia radiata" ~
+          scale_x_continuous(limits = c(0, 80),
+                             breaks = seq(0, 80, by = 20),
                              oob = scales::oob_keep),
-        Species == "Amphibolis griffithii" ~ 
-          scale_x_continuous(limits = c(0, 0.03),
-                             breaks = seq(0, 0.03, by = 0.01),
-                             labels = scales::label_number(accuracy = c(1, 0.01 %>% rep(3))),
+        Species == "Amphibolis griffithii" ~
+          scale_x_continuous(limits = c(0, 120),
+                             breaks = seq(0, 120, by = 30),
                              oob = scales::oob_keep)
         )
       ) +
-    labs(x = expression("Exponential decay ("*italic(k)*", day"^-1*")")) +
+    labs(x = "Half-life (days)") +
     coord_cartesian(expand = F, clip = "off") +
     mytheme +
     theme(axis.title.y = element_blank(),
@@ -1817,28 +2013,20 @@ Fig_2b
 # Safely ignore warning, which is due to intentional NAs in geom_text.
 
 # 3.3.3 Figure 2c ####
-contrast %>%
-  filter(!(Species %in% c("Ecklonia radiata", "Amphibolis griffithii") & 
-             Mass == "Fresh")) %>%
-  group_by(Species) %>%
-  summarise(min = qi(log_ratio, 0.99)[1], 
-            mean = mean(log_ratio), 
-            max = qi(log_ratio, 0.99)[2])
-
-Fig_2c <- contrast %>%
+Fig_2c <- contrast_t0.5 %>%
   filter(!(Species %in% c("Ecklonia radiata", "Amphibolis griffithii") & 
              Mass == "Fresh")) %>%
   ggplot() +
     stat_density_ridges(aes(log_ratio, y = 0, fill = Species),
-                        colour = NA, n = 2^10, from = c(1, 0.4, 0), to = c(5, 1.2, 0.4),
-                        bandwidth = c(4*0.02, 0.8*0.02, 0.4*0.02)) +
+                        colour = NA, n = 2^10, from = c(1, 0.4, 0), to = c(4, 1.2, 0.4),
+                        bandwidth = c(3*0.02, 0.8*0.02, 0.4*0.02)) +
     scale_fill_manual(values = c("#333b08", "#c3b300", "#4a7518"), guide = "none") +
     facet_wrap(~ Species, scales = "free") + # I am wrapping here so that densities are the same height
     facetted_pos_scales(
       x = list(
         Species == "Laminaria digitata" ~
-          scale_x_continuous(limits = c(1, 5),
-                             breaks = seq(1, 5, 1),
+          scale_x_continuous(limits = c(1, 4),
+                             breaks = seq(1, 4, 1),
                              labels = scales::label_math(10^.x),
                              oob = scales::oob_keep),
         Species == "Ecklonia radiata" ~
@@ -1853,7 +2041,7 @@ Fig_2c <- contrast %>%
                              oob = scales::oob_keep)
         )
       ) +
-    labs(x = expression("Relative exponential decay ("*italic(k)["Dead"]*"/"*italic(k)["Live"]*")")) +
+    labs(x = "Relative half-life (Live / Dead)") +
     coord_cartesian(expand = F, clip = "off") +
     mytheme +
     theme(axis.title.y = element_blank(),
@@ -1907,49 +2095,47 @@ Fig_S3a <- prediction %>%
 Fig_S3a
 
 # 3.4.2 Figure S3b ####
-k %>%
+Fig_S3b <- posterior %>%
   filter(Treatment != "Prior" & Mass == "Fresh") %>%
-  group_by(Species, Treatment) %>%
-  summarise(mean = mean(k), max = qi(k, 0.99)[2])
-
-Fig_S3b <- k %>%
-  filter(Treatment != "Prior" & Mass == "Fresh") %>%
+  mutate( # Laminaria digitata and Amphibolis griffithii half-lifes are 
+          # best visualised on the log scale
+    t0.5 = if_else(Species == "Ecklonia radiata", t0.5, log10(t0.5))
+  ) %>%
   ggplot() +
-    stat_density_ridges(aes(k, y = Treatment, fill = Species), 
-                        colour = NA, n = 2^10, from = rep(0, 3), to = c(0.12, 0.12, 0.004), 
-                        scale = 2, bandwidth = c(0.12*0.02, 0.12*0.02, 0.004*0.02)) +
+    stat_density_ridges(aes(t0.5, y = Treatment, fill = Species, alpha = Species), 
+                        colour = NA, n = 2^10, from = c(0, 0, 2), to = c(6, 100, 5),
+                        scale = 2, bandwidth = c(6*0.02, 100*0.02, 3*0.02)) +
     geom_text(
       data = tibble(
-        Species = k %$% levels(Species) %>% rep(each = 2) %>% fct(),
+        Species = posterior %$% levels(Species) %>% rep(each = 2) %>% fct(),
         Treatment = c("Live", "Dead") %>% rep(3) %>% fct(),
         label = c("Live", "Dead", NA %>% rep(4))
       ),
-      aes(x = -0.0313, y = Treatment, label = label),
+      aes(x = -1.565, y = Treatment, label = label),
       family = "Futura", size = 12, size.unit = "pt",
       hjust = 0, vjust = 0
     ) +
     scale_fill_manual(values = c("#333b08", "#c3b300", "#4a7518"), guide = "none") +
+    scale_alpha_manual(values = c(1, 1, 0.7), guide = "none") +
     facet_grid(~ Species, scales = "free") +
     facetted_pos_scales(
       x = list(
-        Species == "Laminaria digitata" ~ 
-          scale_x_continuous(limits = c(0, 0.12), 
-                             breaks = seq(0, 0.12, by = 0.04),
-                             labels = scales::label_number(accuracy = c(1, 0.01 %>% rep(3))),
+        Species == "Laminaria digitata" ~
+          scale_x_continuous(limits = c(0, 6),
+                             breaks = seq(0, 6, by = 2),
+                             labels = scales::label_math(10^.x),
                              oob = scales::oob_keep),
-        Species == "Ecklonia radiata" ~ 
-          scale_x_continuous(limits = c(0, 0.12), 
-                             breaks = seq(0, 0.12, by = 0.04),
-                             labels = scales::label_number(accuracy = c(1, 0.01 %>% rep(3))),
+        Species == "Ecklonia radiata" ~
+          scale_x_continuous(limits = c(0, 100),
+                             breaks = seq(0, 100, by = 25),
                              oob = scales::oob_keep),
-        Species == "Amphibolis griffithii" ~ 
-          scale_x_continuous(limits = c(0, 0.004),
-                             breaks = seq(0, 0.004, by = 0.002),
-                             labels = scales::label_number(accuracy = c(1, 0.001 %>% rep(2))),
+        Species == "Amphibolis griffithii" ~
+          scale_x_continuous(limits = c(2, 5),
+                             labels = scales::label_math(10^.x),
                              oob = scales::oob_keep)
         )
       ) +
-    labs(x = expression("Exponential decay ("*italic(k)*", day"^-1*")")) +
+    labs(x = "Half-life (days)") +
     coord_cartesian(expand = F, clip = "off") +
     mytheme +
     theme(axis.title.y = element_blank(),
@@ -1962,22 +2148,15 @@ Fig_S3b
 # Safely ignore warning, which is due to intentional NAs in geom_text.
 
 # 3.4.3 Figure S3c ####
-contrast %>%
-  filter(Mass == "Fresh") %>%
-  group_by(Species) %>%
-  summarise(min = qi(log_ratio, 0.99)[1], 
-            mean = mean(log_ratio), 
-            max = qi(log_ratio, 0.99)[2])
-
-Fig_S3c <- contrast %>%
+Fig_S3c <- contrast_t0.5 %>%
   filter(Mass == "Fresh") %>%
   ggplot() +
     stat_density_ridges(aes(log_ratio, y = 0, fill = Species),
-                        colour = NA, n = 2^10, from = c(1, 0.3, -1), to = c(5, 1.1, 2),
-                        bandwidth = c(4*0.02, 0.8*0.02, 3*0.02)) +
+                        colour = NA, n = 2^10, from = c(1, 0.3, -1), to = c(4, 1.1, 2),
+                        bandwidth = c(3*0.02, 0.8*0.02, 3*0.02)) +
     geom_vline(
       data = tibble(
-        Species = contrast %$% levels(Species) %>% fct(),
+        Species = contrast_t0.5 %$% levels(Species) %>% fct(),
         x = c(NA, NA, 0)
       ),
       aes(xintercept = x)
@@ -1987,8 +2166,8 @@ Fig_S3c <- contrast %>%
     facetted_pos_scales(
       x = list(
         Species == "Laminaria digitata" ~ 
-          scale_x_continuous(limits = c(1, 5), 
-                             breaks = seq(1, 5, by = 1),
+          scale_x_continuous(limits = c(1, 4), 
+                             breaks = seq(1, 4, by = 1),
                              labels = scales::label_math(10^.x),
                              oob = scales::oob_keep),
         Species == "Ecklonia radiata" ~ 
@@ -2003,7 +2182,7 @@ Fig_S3c <- contrast %>%
                              oob = scales::oob_keep) # so need to replace hyphen with minus afterwards
         )
       ) +
-    labs(x = expression("Relative exponential decay ("*italic(k)["Dead"]*"/"*italic(k)["Live"]*")")) +
+    labs(x = "Relative half-life (Live / Dead)") +
     coord_cartesian(expand = F, clip = "off") +
     mytheme +
     theme(axis.title.y = element_blank(),
@@ -2022,37 +2201,116 @@ Fig_S3 %>%
   ggsave(filename = "Fig_S3.pdf", path = "Figures",
          device = cairo_pdf, height = 15, width = 20, units = "cm")
 
+# 3.5 Figure S4 ####
+Fig_S4 <- posterior %>%
+  filter(Treatment != "Prior") %>% 
+  mutate(Mass = Mass %>% fct_relevel("Fresh"),
+         Transparent = Species == "Amphibolis griffithii" & Mass == "Fresh") %>%
+  ggplot() +
+    stat_density_ridges(aes(k, y = Treatment, fill = Species, alpha = Transparent), 
+                        colour = NA, n = 2^10, from = rep(0, 3), to = c(0.12, 0.18, 0.02), 
+                        scale = 2, bandwidth = c(0.12*0.02, 0.18*0.02, 0.02*0.02)) +
+    geom_text(
+      data = . %>% droplevels() %$%
+        expand_grid(
+          Species = levels(Species) %>% fct(),
+          Mass = levels(Mass) %>% fct(),
+          Treatment = levels(Treatment) %>% fct()
+        ) %>%
+        mutate(
+          label = if_else(Species == "Laminaria digitata",
+                          Treatment, NA)
+        ),
+      aes(x = -0.0421, y = Treatment, label = label),
+      family = "Futura", size = 12, size.unit = "pt",
+      hjust = 0, vjust = 0
+    ) +
+    scale_fill_manual(values = c("#333b08", "#c3b300", "#4a7518"), guide = "none") +
+    scale_alpha_manual(values = c(1, 0.7), guide = "none") +
+    facet_grid2(Mass ~ Species, scales = "free", switch = "y",
+                strip = strip_nested(text_y = element_text(angle = 0, hjust = 0, vjust = 1))) +
+    facetted_pos_scales(
+      x = list(
+        Species == "Laminaria digitata" ~
+          scale_x_continuous(limits = c(0, 0.12),
+                             breaks = seq(0, 0.12, by = 0.04),
+                             labels = scales::label_number(accuracy = c(1, 0.01 %>% rep(3))),
+                             oob = scales::oob_keep),
+        Species == "Ecklonia radiata" ~
+          scale_x_continuous(limits = c(0, 0.18),
+                             breaks = seq(0, 0.18, by = 0.06),
+                             labels = scales::label_number(accuracy = c(1, 0.01 %>% rep(3))),
+                             oob = scales::oob_keep),
+        Species == "Amphibolis griffithii" ~
+          scale_x_continuous(limits = c(0, 0.02),
+                             breaks = seq(0, 0.02, by = 0.01),
+                             labels = scales::label_number(accuracy = c(1, 0.01 %>% rep(2))),
+                             oob = scales::oob_keep)
+        )
+      ) +
+    labs(x = expression("Exponential decay ("*italic(k)*", day"^-1*")")) +
+    coord_cartesian(expand = F, clip = "off") +
+    mytheme +
+    theme(plot.margin = margin(0.2, 0.5, 0.2, 0, unit = "cm"),
+          axis.title.y = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.line.y = element_blank(),
+          strip.text.x = element_text(face = "italic"),
+          strip.text.y = element_text(face = "bold"))
+
+Fig_S4
+# First warning is benign, just informs that a panel in the grid is missing 
+# (data for Laminaria digitata dry mass don't exist).
+# Safely ignore second warning, which is due to intentional NAs in geom_text.
+
+Fig_S4 %>%
+  ggsave(filename = "Fig_S4.pdf", path = "Figures",
+         device = cairo_pdf, height = 8, width = 16, units = "cm")
+
 # 4. Tables ####
 # 4.1 Combine estimates ####
 k_parameters <- dry_k_parameters %>%
-  mutate(Mass = "Dry" %>% fct()) %>%
+  mutate(Mass = "Dry") %>%
   bind_rows(fresh_k_parameters %>%
+              mutate(Mass = "Fresh")) %>%
+  mutate(Species = Species %>% 
+           fct_relevel("Laminaria digitata", "Ecklonia radiata"),
+         Mass = Mass %>% fct_relevel("Fresh")) %T>%
+  print()
+  
+parameters <- dry_parameters %>%
+  mutate(Mass = "Dry") %>%
+  bind_rows(fresh_parameters %>%
+              mutate(Mass = "Fresh")) %>%
+  mutate(Species = Species %>% 
+           fct_relevel("Laminaria digitata", "Ecklonia radiata"),
+         Mass = Mass %>% fct_relevel("Fresh")) %T>%
+  print()
+
+contrast_k_summary <- dry_contrast_k_summary %>%
+  mutate(Mass = "Dry" %>% fct()) %>%
+  bind_rows(fresh_contrast_k_summary %>%
               mutate(Mass = "Fresh" %>% fct())) %>%
   mutate(Species = Species %>% 
            fct_relevel("Laminaria digitata", "Ecklonia radiata")) %T>%
   print()
   
-parameters <- dry_parameters %>%
+contrast_t0.5_summary <- dry_contrast_t0.5_summary %>%
   mutate(Mass = "Dry" %>% fct()) %>%
-  bind_rows(fresh_parameters %>%
+  bind_rows(fresh_contrast_t0.5_summary %>%
               mutate(Mass = "Fresh" %>% fct())) %>%
   mutate(Species = Species %>% 
            fct_relevel("Laminaria digitata", "Ecklonia radiata")) %T>%
   print()
 
-contrast_summary <- dry_contrast_summary %>%
-  mutate(Mass = "Dry" %>% fct()) %>%
-  bind_rows(fresh_contrast_summary %>%
-              mutate(Mass = "Fresh" %>% fct())) %>%
-  mutate(Species = Species %>% 
-           fct_relevel("Laminaria digitata", "Ecklonia radiata")) %T>%
-  print()
-  
 # 4.2 Table 1 ####
-Table_1.1 <- contrast_summary %>%
+# I favour reporting half-life contrasts because they are more intuitive
+# (besides, the log_ratio of the t0.5 contrast is identical to the k contrast).
+Table_1.1 <- contrast_t0.5_summary %>%
   filter(!(Species %in% c("Ecklonia radiata", "Amphibolis griffithii") & 
              Mass == "Fresh")) %>%
-  select(Species, Live, Dead, difference, log_ratio, P) %>%
+  select(Species, Live, Dead, difference, log_ratio, log_ratio_sym, P) %>%
   arrange(Species) %T>%
   print()
 
@@ -2064,46 +2322,30 @@ read_docx() %>%
   body_add_table(value = Table_1.1) %>%
   print(target = here("Tables", "Table_1.1.docx"))
 
-# 4.3 Table S2 ####
-Table_S2.1 <- k_parameters %>% 
-  select(Species, Mass, Treatment, k, sigma) %>%
-  left_join(
-    parameters %>% 
-      select(Species, Mass, Treatment, alpha, mu, tau, epsilon, lambda, theta),
-    by = c("Species", "Mass", "Treatment")
-  ) %>%
+# Save alternative anyway
+Table_1.1_k <- contrast_k_summary %>%
+  filter(!(Species %in% c("Ecklonia radiata", "Amphibolis griffithii") & 
+             Mass == "Fresh")) %>%
+  select(Species, Live, Dead, difference, log_ratio, log_ratio_sym, P) %>%
   arrange(Species) %T>%
   print()
 
-Table_S2.1 %>%
-  write_csv(here("Tables", "Table_S2.1.csv"))
+Table_1.1_k %>%
+  write_csv(here("Tables", "Table_1.1_k.csv"))
 
 read_docx() %>%
-  body_add_table(value = Table_S2.1) %>%
-  print(target = here("Tables", "Table_S2.1.docx"))
+  body_add_table(value = Table_1.1_k) %>%
+  print(target = here("Tables", "Table_1.1_k.docx"))
 
-Table_S2.1_reduced <- k_parameters %>% 
-  select(Species, Mass, Treatment, k) %>%
+# 4.3 Table S3 ####
+Table_S3 <- k_parameters %>% 
+  select(Species, Mass, Treatment, k, t0.5) %>%
   left_join(
     parameters %>% 
       select(Species, Mass, Treatment, alpha, mu, tau),
     by = c("Species", "Mass", "Treatment")
   ) %>%
-  arrange(Species) %T>%
-  print()
-
-Table_S2.1_reduced %>%
-  write_csv(here("Tables", "Table_S2.1_reduced.csv"))
-
-read_docx() %>%
-  body_add_table(value = Table_S2.1_reduced) %>%
-  print(target = here("Tables", "Table_S2.1_reduced.docx"))
-
-# 4.4 Table S3 ####
-Table_S3 <- contrast_summary %>%
-  filter(Mass == "Fresh") %>%
-  select(Species, Live, Dead, difference, log_ratio, P) %>%
-  arrange(Species) %T>%
+  arrange(Species, Mass) %T>%
   print()
 
 Table_S3 %>%
@@ -2112,3 +2354,30 @@ Table_S3 %>%
 read_docx() %>%
   body_add_table(value = Table_S3) %>%
   print(target = here("Tables", "Table_S3.docx"))
+
+# 4.4 Table S4 ####
+Table_S4 <- contrast_t0.5_summary %>%
+  filter(Mass == "Fresh") %>%
+  select(Species, Live, Dead, difference, log_ratio, log_ratio_sym, P) %>%
+  arrange(Species) %T>%
+  print()
+
+Table_S4 %>%
+  write_csv(here("Tables", "Table_S4.csv"))
+
+read_docx() %>%
+  body_add_table(value = Table_S4) %>%
+  print(target = here("Tables", "Table_S4.docx"))
+
+Table_S4_k <- contrast_k_summary %>%
+  filter(Mass == "Fresh") %>%
+  select(Species, Live, Dead, difference, log_ratio, log_ratio_sym, P) %>%
+  arrange(Species) %T>%
+  print()
+
+Table_S4_k %>%
+  write_csv(here("Tables", "Table_S4_k.csv"))
+
+read_docx() %>%
+  body_add_table(value = Table_S4_k) %>%
+  print(target = here("Tables", "Table_S4_k.docx"))
