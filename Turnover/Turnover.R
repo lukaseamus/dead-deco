@@ -121,7 +121,7 @@ PB_kelp %>%
 # 1.3 Forest turnover ####
 # 1.3.1 Load ForC data ####
 # These data can be downloaded from github.com/forc-db/ForC/tree/master/data.
-# The data publciation is Anderson-Teixeira 2018 (doi: 10.1002/ecy.2229).
+# The data publication is Anderson-Teixeira 2018 (doi: 10.1002/ecy.2229).
 PB_forest_ForC <- here("Turnover", "ForC_measurements.csv") %>% 
   read_csv() %T>%
   print()
