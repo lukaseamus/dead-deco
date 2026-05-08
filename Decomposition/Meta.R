@@ -2596,7 +2596,7 @@ CSP_contrast_summary <- CSP_contrast %>%
 
 # 5.4 Figure S6 ####
 # 5.4.1 Figure S6a ####
-Fig_S4a <- CSP %>%
+Fig_S6a <- CSP %>%
   mutate(Condition = Condition %>% fct_relevel("Dead")) %>%
   ggplot() +
     stat_density_ridges(aes(CSP, Condition), fill = "#a29400",
@@ -2616,7 +2616,7 @@ Fig_S4a <- CSP %>%
           axis.line.y = element_blank(),
           plot.margin = margin(0.2, 0.5, 0.2, 0, unit = "cm"))
 
-Fig_S4a
+Fig_S6a
 
 # 5.4.2 Figure S6b ####
 # Add labels to CSP_contrast
@@ -2627,7 +2627,7 @@ CSP_contrast %<>%
            ( (1 - P) * 100 ) %>% str_c("%")) %T>%
   print()
 
-Fig_S4b <- CSP_contrast %>%
+Fig_S6b <- CSP_contrast %>%
   ggplot() +
     stat_density_ridges(aes(difference, 0), fill = "#a29400",
                         colour = NA, n = 2^10, from = -1, to = 1,
@@ -2657,10 +2657,10 @@ Fig_S4b <- CSP_contrast %>%
           axis.line.y = element_blank(),
           plot.margin = margin(0.2, 0.5, 0.2, 0, unit = "cm"))
 
-Fig_S4b
+Fig_S6b
 
 # 5.4.3 Figure S6c ####
-Fig_S4c <- CSP_contrast %>%
+Fig_S6c <- CSP_contrast %>%
   ggplot() +
     stat_density_ridges(aes(log_ratio, 0), fill = "#a29400",
                         colour = NA, n = 2^10, from = -10, to = 10,
@@ -2689,12 +2689,12 @@ Fig_S4c <- CSP_contrast %>%
           axis.line.y = element_blank(),
           plot.margin = margin(0.2, 0.5, 0.2, 0, unit = "cm"))
 
-Fig_S4c
+Fig_S6c
 
 # 5.4.4 Combine panels ####
-Fig_S4 <- ( Fig_S4a / Fig_S4b / Fig_S4c ) +
+Fig_S6 <- ( Fig_S6a / Fig_S6b / Fig_S6c ) +
   plot_layout(heights = c(1, 0.5, 0.5))
 
-Fig_S4 %>%
-  ggsave(filename = "Fig_S4.pdf", path = "Figures",
+Fig_S6 %>%
+  ggsave(filename = "Fig_S6.pdf", path = "Figures",
          device = cairo_pdf, height = 15, width = 10, units = "cm")
