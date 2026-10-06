@@ -49,3 +49,6 @@ po/*~
 rsconnect/
 
 .DS_Store
+
+# RDS files
+*.rds
